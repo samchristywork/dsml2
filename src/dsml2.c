@@ -33,14 +33,29 @@ struct style {
 /*
  * Macros for applying style information.
  */
-#define ADD_STYLE_INT(a, b) { cJSON *s = find(pos, a); \
-  if(s){ b += s->valueint; } }
+#define ADD_STYLE_INT(a, b)                                                    \
+  {                                                                            \
+    cJSON *s = find(pos, a);                                                   \
+    if (s) {                                                                   \
+      b += s->valueint;                                                        \
+    }                                                                          \
+  }
 
-#define APPLY_STYLE_INT(a, b) { cJSON *s = find(pos, a); \
-  if(s){ b = s->valueint; } }
+#define APPLY_STYLE_INT(a, b)                                                  \
+  {                                                                            \
+    cJSON *s = find(pos, a);                                                   \
+    if (s) {                                                                   \
+      b = s->valueint;                                                         \
+    }                                                                          \
+  }
 
-#define APPLY_STYLE_DOUBLE(a, b) { cJSON *s = find(pos, a); \
-  if(s){ b = s->valuedouble; } }
+#define APPLY_STYLE_DOUBLE(a, b)                                               \
+  {                                                                            \
+    cJSON *s = find(pos, a);                                                   \
+    if (s) {                                                                   \
+      b = s->valuedouble;                                                      \
+    }                                                                          \
+  }
 
 /*
  * The Cairo context object.
@@ -65,23 +80,23 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
   return fwrite(ptr, size, nmemb, stream);
 }
 
-cJSON *readJSONFile(FILE *f){
+cJSON *readJSONFile(FILE *f) {
 
   /*
    * Get the size of the file so that we know how large we need to make the
    * buffer
    */
   fseek(f, 0, SEEK_END);
-  int size=ftell(f);
+  int size = ftell(f);
   rewind(f);
 
   /*
    * Read the JSON data into memory
    */
-  char buffer[size+1];
-  buffer[size]=0;
-  int ret=fread(buffer, 1, size, f);
-  if(ret!=size){
+  char buffer[size + 1];
+  buffer[size] = 0;
+  int ret = fread(buffer, 1, size, f);
+  if (ret != size) {
     fprintf(stderr, "Could not read the expected number of bytes.\n");
     exit(EXIT_FAILURE);
   }
@@ -179,7 +194,7 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
      */
     cJSON *u = find(icon, "url");
     cJSON *n = find(icon, "name");
-    if(u && n){
+    if (u && n) {
 
       /*
        * Save the context and apply transformations
@@ -193,7 +208,7 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
        * succeed
        */
       RsvgHandle *rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
-      if(!rsvg){
+      if (!rsvg) {
         printf("File was not found locally, downloading.\n");
         CURL *handle = curl_easy_init();
         if (handle) {
@@ -204,7 +219,7 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
           CURLcode res = curl_easy_perform(handle);
           curl_easy_cleanup(handle);
           fclose(f);
-        }else{
+        } else {
           fprintf(stderr, "cURL failure.\n");
           exit(EXIT_FAILURE);
         }
@@ -214,7 +229,7 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
       /*
        * Display the image
        */
-      if(!rsvg_handle_render_cairo(rsvg, cr)){
+      if (!rsvg_handle_render_cairo(rsvg, cr)) {
         fprintf(stderr, "Icon could not be rendered.\n");
         exit(EXIT_FAILURE);
       }
@@ -354,7 +369,7 @@ int main(int argc, char *argv[]) {
   cairo_surface_t *surface = cairo_pdf_surface_create(
       outfileName, 8.5 * POINTS_PER_INCH, 11 * POINTS_PER_INCH);
 
-  if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS){
+  if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
     fprintf(stderr, "Invalid filename.\n");
     usage(argv);
   }
