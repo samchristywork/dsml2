@@ -167,17 +167,32 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
     }
   }
 
+  /*
+   * This section of code is run whenever the "icon" element is encountered
+   */
   cJSON *icon = find(stylesheet, "icon");
   if (icon) {
+
+    /*
+     * The "icon" element should have at least a URL and filename nested within
+     * it.
+     */
     cJSON *u = find(icon, "url");
     cJSON *n = find(icon, "name");
-
     if(u && n){
+
+      /*
+       * Save the context and apply transformations
+       */
       cairo_save(cr);
       cairo_translate(cr, style.x, style.y);
       cairo_scale(cr, style.size, style.size);
-      RsvgHandle *rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
 
+      /*
+       * Try to open the image, download it from the internet if that doesn't
+       * succeed
+       */
+      RsvgHandle *rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
       if(!rsvg){
         printf("File was not found locally, downloading.\n");
         CURL *handle = curl_easy_init();
@@ -196,10 +211,17 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
         rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
       }
 
+      /*
+       * Display the image
+       */
       if(!rsvg_handle_render_cairo(rsvg, cr)){
         fprintf(stderr, "Icon could not be rendered.\n");
         exit(EXIT_FAILURE);
       }
+
+      /*
+       * Restore the graphics context
+       */
       cairo_restore(cr);
     }
   }
