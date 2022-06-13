@@ -23,18 +23,19 @@ These are the dependencies for DSML2:
 gcc
 libcairo2-dev
 libcjson-dev
+librsvg2-dev
 make
 pkg-config
 ```
 
 `gcc`, `make`, and `pkg-config` are used to build the C program, which is
-linked against `libcairo2` for the graphical output, and `libcjson-dev` for
-parsing input files.
+linked against `libcairo2` and `librsvg2-dev` for the graphical output, and
+`libcjson-dev` for parsing input files.
 
 They can be installed with:
 
 ```
-apt-get install -y gcc libcairo2-dev libcjson-dev make pkg-config
+apt-get install -y gcc libcairo2-dev libcjson-dev librsvg2-dev make pkg-config
 ```
 
 ## License
