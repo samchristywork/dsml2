@@ -1,5 +1,7 @@
 #include <cairo-pdf.h>
 #include <cjson/cJSON.h>
+#include <curl/curl.h>
+#include <librsvg-2.0/librsvg/rsvg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,7 +22,7 @@ struct style {
   int y;
   int xoffset;
   int yoffset;
-  int size;
+  float size;
   float r;
   float g;
   float b;
@@ -54,6 +56,13 @@ void usage(char *argv[]) {
           "",
           argv[0]);
   exit(EXIT_FAILURE);
+}
+
+/*
+ * The callback that cURL uses to write the icon file to the filesystem.
+ */
+size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+  return fwrite(ptr, size, nmemb, stream);
 }
 
 cJSON *readJSONFile(FILE *f){
@@ -145,23 +154,58 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
 
   cJSON *pos = find(stylesheet, "position");
   if (pos) {
-    APPLY_STYLE_INT("size", style.size)
     ADD_STYLE_INT("x", style.x)
     ADD_STYLE_INT("y", style.y)
     APPLY_STYLE_DOUBLE("r", style.r)
     APPLY_STYLE_DOUBLE("g", style.g)
     APPLY_STYLE_DOUBLE("b", style.b)
     APPLY_STYLE_DOUBLE("a", style.a)
-    APPLY_STYLE_INT("size", style.size)
+    APPLY_STYLE_DOUBLE("size", style.size)
     cJSON *face = find(pos, "face");
     if (face) {
       strcpy(style.face, face->valuestring);
     }
   }
 
+  cJSON *icon = find(stylesheet, "icon");
+  if (icon) {
+    cJSON *u = find(icon, "url");
+    cJSON *n = find(icon, "name");
+
+    if(u && n){
+      cairo_save(cr);
+      cairo_translate(cr, style.x, style.y);
+      cairo_scale(cr, style.size, style.size);
+      RsvgHandle *rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
+
+      if(!rsvg){
+        printf("File was not found locally, downloading.\n");
+        CURL *handle = curl_easy_init();
+        if (handle) {
+          FILE *f = fopen(n->valuestring, "wb");
+          curl_easy_setopt(handle, CURLOPT_URL, u->valuestring);
+          curl_easy_setopt(handle, CURLOPT_WRITEDATA, f);
+          curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_callback);
+          CURLcode res = curl_easy_perform(handle);
+          curl_easy_cleanup(handle);
+          fclose(f);
+        }else{
+          fprintf(stderr, "cURL failure.\n");
+          exit(EXIT_FAILURE);
+        }
+        rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
+      }
+
+      if(!rsvg_handle_render_cairo(rsvg, cr)){
+        fprintf(stderr, "Icon could not be rendered.\n");
+        exit(EXIT_FAILURE);
+      }
+      cairo_restore(cr);
+    }
+  }
+
   if (cJSON_IsString(content) && content->valuestring) {
-    printf("%s", content->valuestring);
-    printf(" %d %d\n", style.x, style.y);
+
     /*
      * Configure the style of text that is to be displayed
      */
