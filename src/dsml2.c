@@ -31,8 +31,15 @@ struct style {
   float g;
   float b;
   float a;
+  int textAlign;
   char face[256];
   char link[256];
+};
+
+enum align {
+  ALIGN_LEFT = 0,
+  ALIGN_CENTER = 1,
+  ALIGN_RIGHT = 2,
 };
 
 /*
@@ -185,6 +192,16 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
     if (link) {
       strcpy(style.link, link->valuestring);
     }
+    cJSON *textAlign = find(styleElement, "textAlign");
+    if (textAlign) {
+      if (strcmp("center", textAlign->valuestring) == 0) {
+        style.textAlign = ALIGN_CENTER;
+      } else if (strcmp("left", textAlign->valuestring) == 0) {
+        style.textAlign = ALIGN_LEFT;
+      } else if (strcmp("right", textAlign->valuestring) == 0) {
+        style.textAlign = ALIGN_RIGHT;
+      }
+    }
     cJSON *contentNode = styleElement->child;
     while (1) {
       if (!contentNode) {
@@ -305,7 +322,14 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
         cairo_line_to(cr, style.x + extents.width, style.y + style.size * .2);
         cairo_stroke(cr);
       }
-      cairo_move_to(cr, style.x, style.y);
+
+      float offsetx = 0;
+      if (style.textAlign == ALIGN_CENTER) {
+        offsetx -= extents.width / 2;
+      } else if (style.textAlign == ALIGN_RIGHT) {
+        offsetx -= extents.width;
+      }
+      cairo_move_to(cr, style.x + offsetx, style.y);
       cairo_show_text(cr, content->valuestring);
       if (style.link[0]) {
         cairo_tag_end(cr, CAIRO_TAG_LINK);
@@ -344,7 +368,13 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
           cairo_stroke(cr);
         }
 
-        cairo_move_to(cr, style.x, style.y + k * style.size * style.lineHeight);
+        float offsetx = 0;
+        if (style.textAlign == ALIGN_CENTER) {
+          offsetx -= extents.width / 2;
+        } else if (style.textAlign == ALIGN_RIGHT) {
+          offsetx -= extents.width;
+        }
+        cairo_move_to(cr, style.x + offsetx, style.y + k * style.size * style.lineHeight);
         cairo_show_text(cr, str);
 
         if (style.link[0]) {
