@@ -333,15 +333,14 @@ int main(int argc, char *argv[]) {
   /*
    * Initialize the Lua library
    */
-
   L = luaL_newstate();
   luaL_openlibs(L);
 
   /*
    * Evaluate a string that defines a function
    */
-  buf = "function eval(n);return load('return '..n)();end";
-  error = luaL_loadbuffer(L, buf, strlen(buf), "") || lua_pcall(L, 0, 0, 0);
+  char *buf = "function eval(n);return load('return '..n)();end";
+  int error = luaL_loadbuffer(L, buf, strlen(buf), "") || lua_pcall(L, 0, 0, 0);
   if (error) {
     fprintf(stderr, "%s\n", lua_tostring(L, -1));
     exit(EXIT_FAILURE);
@@ -413,6 +412,42 @@ int main(int argc, char *argv[]) {
 
   cJSON *content = readJSONFile(contentFile);
   cJSON *stylesheet = readJSONFile(stylesheetFile);
+
+  /*
+   * Collect all of the constants
+   */
+  cJSON *styleElement = find(stylesheet, "_constants");
+  if (styleElement) {
+    cJSON *node = NULL;
+
+    node = styleElement->child;
+    while (1) {
+      if (!node) {
+        break;
+      }
+
+      /*
+       * Evaluate a string that sets up some global variables.
+       */
+      char buf[256];
+      if(cJSON_IsString(node)) {
+        snprintf(buf, 255, "%s = %s;", node->string, node->valuestring);
+      }else if(cJSON_IsNumber(node)){
+        snprintf(buf, 255, "%s = %f;", node->string, node->valuedouble);
+      }else{
+        fprintf(stderr, "JSON node unknown format.\n");
+        exit(EXIT_FAILURE);
+      }
+      error = luaL_loadbuffer(L, buf, strlen(buf), "") || lua_pcall(L, 0, 0, 0);
+      if (error) {
+        fprintf(stderr, "%s\n", lua_tostring(L, -1));
+        exit(EXIT_FAILURE);
+      }
+
+      node = node->next;
+    }
+  }
+
 
   simultaneous_traversal(content, stylesheet);
 
