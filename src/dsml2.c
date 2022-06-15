@@ -32,6 +32,7 @@ struct style {
   float b;
   float a;
   char face[256];
+  char link[256];
 };
 
 /*
@@ -203,6 +204,10 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
     if (face) {
       strcpy(style.face, face->valuestring);
     }
+    cJSON *link = find(styleElement, "link");
+    if (link) {
+      strcpy(style.link, link->valuestring);
+    }
   }
 
   /*
@@ -277,9 +282,22 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
     /*
      * Render the text
      */
+    cairo_text_extents_t extents;
     if(style.textwidth==0){
+      cairo_text_extents (cr, content->valuestring, &extents);
+      if(style.link[0]){
+        cairo_tag_begin (cr, CAIRO_TAG_LINK, style.link);
+        cairo_set_source_rgba(cr, 0, 0, 1, 1);
+        cairo_set_line_width (cr, 1);
+        cairo_move_to(cr, style.x, style.y+style.size*.1);
+        cairo_line_to (cr, style.x+extents.width, style.y+style.size*.1);
+        cairo_stroke (cr);
+      }
       cairo_move_to(cr, style.x, style.y);
       cairo_show_text(cr, content->valuestring);
+      if(style.link[0]){
+        cairo_tag_end (cr, CAIRO_TAG_LINK);
+      }
     }else{
       char *str=malloc(strlen(content->valuestring)+1);
       int j=0;
@@ -293,7 +311,6 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
           break;
         }
         for(int i=strlen(str);i>0;i--){
-          cairo_text_extents_t extents;
           cairo_text_extents (cr, str, &extents);
           if(extents.width<style.textwidth){
             j+=i;
@@ -301,8 +318,22 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
           }
           str[i]=0;
         }
+
+        if(style.link[0]){
+          cairo_tag_begin (cr, CAIRO_TAG_LINK, style.link);
+          cairo_set_source_rgba(cr, 0, 0, 1, 1);
+          cairo_set_line_width (cr, 1);
+          cairo_move_to(cr, style.x, style.y+k*style.size*style.lineheight+style.size*.1);
+          cairo_line_to (cr, style.x+extents.width, style.y+k*style.size*style.lineheight+style.size*.1);
+          cairo_stroke (cr);
+        }
+
         cairo_move_to(cr, style.x, style.y+k*style.size*style.lineheight);
         cairo_show_text(cr, str);
+
+        if(style.link[0]){
+          cairo_tag_end (cr, CAIRO_TAG_LINK);
+        }
       }
       free(str);
     }
