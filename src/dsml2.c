@@ -20,11 +20,13 @@
  * applied and propagated to children.
  */
 struct style {
-  int x;
-  int y;
-  int xoffset;
-  int yoffset;
+  float x;
+  float y;
+  float xoffset;
+  float yoffset;
   float size;
+  float textwidth;
+  float lineheight;
   float r;
   float g;
   float b;
@@ -195,6 +197,8 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
     APPLY_STYLE_DOUBLE("b", style.b)
     APPLY_STYLE_DOUBLE("a", style.a)
     APPLY_STYLE_DOUBLE("size", style.size)
+    APPLY_STYLE_DOUBLE("textwidth", style.textwidth)
+    APPLY_STYLE_DOUBLE("lineheight", style.lineheight)
     cJSON *face = find(styleElement, "face");
     if (face) {
       strcpy(style.face, face->valuestring);
@@ -235,7 +239,7 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
           curl_easy_setopt(handle, CURLOPT_URL, u->valuestring);
           curl_easy_setopt(handle, CURLOPT_WRITEDATA, f);
           curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_callback);
-          CURLcode res = curl_easy_perform(handle);
+          curl_easy_perform(handle);
           curl_easy_cleanup(handle);
           fclose(f);
         } else {
@@ -273,8 +277,35 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
     /*
      * Render the text
      */
-    cairo_move_to(cr, style.x, style.y);
-    cairo_show_text(cr, content->valuestring);
+    if(style.textwidth==0){
+      cairo_move_to(cr, style.x, style.y);
+      cairo_show_text(cr, content->valuestring);
+    }else{
+      char *str=malloc(strlen(content->valuestring)+1);
+      int j=0;
+
+      for(int k=0;;k++){
+        while(content->valuestring[j]==' '){
+          j++;
+        }
+        strcpy(str, content->valuestring+j);
+        if(strlen(str)==0){
+          break;
+        }
+        for(int i=strlen(str);i>0;i--){
+          cairo_text_extents_t extents;
+          cairo_text_extents (cr, str, &extents);
+          if(extents.width<style.textwidth){
+            j+=i;
+            break;
+          }
+          str[i]=0;
+        }
+        cairo_move_to(cr, style.x, style.y+k*style.size*style.lineheight);
+        cairo_show_text(cr, str);
+      }
+      free(str);
+    }
   }
 
   cJSON *contentNode = content->child;
@@ -318,8 +349,9 @@ void simultaneous_traversal(cJSON *content, cJSON *stylesheet) {
    * Apply default styling rules.
    */
   struct style style = {0};
-  style.size = 10;
+  style.size = 12;
   style.a = 1;
+  style.lineheight = 1.5;
   strcpy(style.face, "Sans");
   _simultaneous_traversal(content, stylesheet, 0, style);
 }
@@ -447,7 +479,6 @@ int main(int argc, char *argv[]) {
       node = node->next;
     }
   }
-
 
   simultaneous_traversal(content, stylesheet);
 

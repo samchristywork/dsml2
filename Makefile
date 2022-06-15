@@ -1,6 +1,6 @@
 CC := gcc
 
-CFLAGS := $(shell pkg-config --cflags cairo librsvg-2.0 lua)
+CFLAGS := -Wall -Werror -Wpedantic $(shell pkg-config --cflags cairo librsvg-2.0 lua)
 LIBS := $(shell pkg-config --libs cairo librsvg-2.0 lua) -lcjson -lcurl
 
 all: build/dsml2
