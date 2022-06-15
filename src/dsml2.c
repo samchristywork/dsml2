@@ -283,56 +283,60 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
      * Render the text
      */
     cairo_text_extents_t extents;
-    if(style.textwidth==0){
-      cairo_text_extents (cr, content->valuestring, &extents);
-      if(style.link[0]){
-        cairo_tag_begin (cr, CAIRO_TAG_LINK, style.link);
+    if (style.textwidth == 0) {
+      cairo_text_extents(cr, content->valuestring, &extents);
+      if (style.link[0]) {
+        cairo_tag_begin(cr, CAIRO_TAG_LINK, style.link);
         cairo_set_source_rgba(cr, 0, 0, 1, 1);
-        cairo_set_line_width (cr, 1);
-        cairo_move_to(cr, style.x, style.y+style.size*.1);
-        cairo_line_to (cr, style.x+extents.width, style.y+style.size*.1);
-        cairo_stroke (cr);
+        cairo_set_line_width(cr, 1);
+        cairo_move_to(cr, style.x, style.y + style.size * .1);
+        cairo_line_to(cr, style.x + extents.width, style.y + style.size * .1);
+        cairo_stroke(cr);
       }
       cairo_move_to(cr, style.x, style.y);
       cairo_show_text(cr, content->valuestring);
-      if(style.link[0]){
-        cairo_tag_end (cr, CAIRO_TAG_LINK);
+      if (style.link[0]) {
+        cairo_tag_end(cr, CAIRO_TAG_LINK);
       }
-    }else{
-      char *str=malloc(strlen(content->valuestring)+1);
-      int j=0;
+    } else {
+      char *str = malloc(strlen(content->valuestring) + 1);
+      int j = 0;
 
-      for(int k=0;;k++){
-        while(content->valuestring[j]==' '){
+      for (int k = 0;; k++) {
+        while (content->valuestring[j] == ' ') {
           j++;
         }
-        strcpy(str, content->valuestring+j);
-        if(strlen(str)==0){
+        strcpy(str, content->valuestring + j);
+        if (strlen(str) == 0) {
           break;
         }
-        for(int i=strlen(str);i>0;i--){
-          cairo_text_extents (cr, str, &extents);
-          if(extents.width<style.textwidth){
-            j+=i;
+        for (int i = strlen(str); i > 0; i--) {
+          cairo_text_extents(cr, str, &extents);
+          if (extents.width < style.textwidth) {
+            j += i;
             break;
           }
-          str[i]=0;
+          str[i] = 0;
         }
 
-        if(style.link[0]){
-          cairo_tag_begin (cr, CAIRO_TAG_LINK, style.link);
+        if (style.link[0]) {
+          cairo_tag_begin(cr, CAIRO_TAG_LINK, style.link);
           cairo_set_source_rgba(cr, 0, 0, 1, 1);
-          cairo_set_line_width (cr, 1);
-          cairo_move_to(cr, style.x, style.y+k*style.size*style.lineheight+style.size*.1);
-          cairo_line_to (cr, style.x+extents.width, style.y+k*style.size*style.lineheight+style.size*.1);
-          cairo_stroke (cr);
+          cairo_set_line_width(cr, 1);
+          cairo_move_to(cr, style.x,
+                        style.y + k * style.size * style.lineheight +
+                            style.size * .1);
+          cairo_line_to(cr, style.x + extents.width,
+                        style.y + k * style.size * style.lineheight +
+                            style.size * .1);
+          cairo_stroke(cr);
         }
 
-        cairo_move_to(cr, style.x, style.y+k*style.size*style.lineheight);
+        cairo_move_to(cr, style.x, style.y + k * style.size * style.lineheight);
         cairo_show_text(cr, str);
 
-        if(style.link[0]){
-          cairo_tag_end (cr, CAIRO_TAG_LINK);
+        if (style.link[0]) {
+          cairo_tag_end(cr, CAIRO_TAG_LINK);
         }
       }
       free(str);
@@ -493,11 +497,11 @@ int main(int argc, char *argv[]) {
        * Evaluate a string that sets up some global variables.
        */
       char buf[256];
-      if(cJSON_IsString(node)) {
+      if (cJSON_IsString(node)) {
         snprintf(buf, 255, "%s = %s;", node->string, node->valuestring);
-      }else if(cJSON_IsNumber(node)){
+      } else if (cJSON_IsNumber(node)) {
         snprintf(buf, 255, "%s = %f;", node->string, node->valuedouble);
-      }else{
+      } else {
         fprintf(stderr, "JSON node unknown format.\n");
         exit(EXIT_FAILURE);
       }
