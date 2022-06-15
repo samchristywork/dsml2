@@ -1,6 +1,6 @@
 {
   "foo": {
-    "position": {
+    "_style": {
       "x": 100,
       "y": 100,
       "size": 20,

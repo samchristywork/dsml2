@@ -35,7 +35,7 @@ struct style {
  */
 #define ADD_STYLE_INT(a, b)                                                    \
   {                                                                            \
-    cJSON *s = find(pos, a);                                                   \
+    cJSON *s = find(styleElement, a);                                          \
     if (s) {                                                                   \
       b += s->valueint;                                                        \
     }                                                                          \
@@ -43,7 +43,7 @@ struct style {
 
 #define APPLY_STYLE_INT(a, b)                                                  \
   {                                                                            \
-    cJSON *s = find(pos, a);                                                   \
+    cJSON *s = find(styleElement, a);                                          \
     if (s) {                                                                   \
       b = s->valueint;                                                         \
     }                                                                          \
@@ -51,7 +51,7 @@ struct style {
 
 #define APPLY_STYLE_DOUBLE(a, b)                                               \
   {                                                                            \
-    cJSON *s = find(pos, a);                                                   \
+    cJSON *s = find(styleElement, a);                                          \
     if (s) {                                                                   \
       b = s->valuedouble;                                                      \
     }                                                                          \
@@ -167,8 +167,8 @@ cJSON *find(cJSON *tree, char *str) {
 void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
                              struct style style) {
 
-  cJSON *pos = find(stylesheet, "position");
-  if (pos) {
+  cJSON *styleElement = find(stylesheet, "_style");
+  if (styleElement) {
     ADD_STYLE_INT("x", style.x)
     ADD_STYLE_INT("y", style.y)
     APPLY_STYLE_DOUBLE("r", style.r)
@@ -176,7 +176,7 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
     APPLY_STYLE_DOUBLE("b", style.b)
     APPLY_STYLE_DOUBLE("a", style.a)
     APPLY_STYLE_DOUBLE("size", style.size)
-    cJSON *face = find(pos, "face");
+    cJSON *face = find(styleElement, "face");
     if (face) {
       strcpy(style.face, face->valuestring);
     }
@@ -278,13 +278,13 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
      */
     _simultaneous_traversal(contentNode, styleNode, depth + 1, style);
 
-    cJSON *pos = find(stylesheet, "position");
-    if (pos) {
-      cJSON *x = find(pos, "xoffset");
+    cJSON *styleElement = find(stylesheet, "_style");
+    if (styleElement) {
+      cJSON *x = find(styleElement, "xoffset");
       if (x) {
         style.x += x->valueint;
       }
-      cJSON *y = find(pos, "yoffset");
+      cJSON *y = find(styleElement, "yoffset");
       if (y) {
         style.y += y->valueint;
       }
