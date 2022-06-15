@@ -38,22 +38,22 @@ struct style {
 /*
  * Macros for applying style information.
  */
-#define ADD_STYLE_DOUBLE(a, b)                                                 \
-  {                                                                            \
-    cJSON *s = find(styleElement, a);                                          \
-    if (s) {                                                                   \
-      lua_eval(s);                                                             \
-      b += s->valuedouble;                                                     \
-    }                                                                          \
+#define ADD_STYLE_DOUBLE(e, a, b) \
+  {                               \
+    cJSON *s = find(e, a);        \
+    if (s) {                      \
+      lua_eval(s);                \
+      b += s->valuedouble;        \
+    }                             \
   }
 
-#define APPLY_STYLE_DOUBLE(a, b)                                               \
-  {                                                                            \
-    cJSON *s = find(styleElement, a);                                          \
-    if (s) {                                                                   \
-      lua_eval(s);                                                             \
-      b = s->valuedouble;                                                      \
-    }                                                                          \
+#define APPLY_STYLE_DOUBLE(e, a, b) \
+  {                                 \
+    cJSON *s = find(e, a);          \
+    if (s) {                        \
+      lua_eval(s);                  \
+      b = s->valuedouble;           \
+    }                               \
   }
 
 /*
@@ -191,15 +191,15 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
 
   cJSON *styleElement = find(stylesheet, "_style");
   if (styleElement) {
-    ADD_STYLE_DOUBLE("x", style.x)
-    ADD_STYLE_DOUBLE("y", style.y)
-    APPLY_STYLE_DOUBLE("r", style.r)
-    APPLY_STYLE_DOUBLE("g", style.g)
-    APPLY_STYLE_DOUBLE("b", style.b)
-    APPLY_STYLE_DOUBLE("a", style.a)
-    APPLY_STYLE_DOUBLE("size", style.size)
-    APPLY_STYLE_DOUBLE("textwidth", style.textwidth)
-    APPLY_STYLE_DOUBLE("lineheight", style.lineheight)
+    ADD_STYLE_DOUBLE(styleElement, "x", style.x)
+    ADD_STYLE_DOUBLE(styleElement, "y", style.y)
+    APPLY_STYLE_DOUBLE(styleElement, "r", style.r)
+    APPLY_STYLE_DOUBLE(styleElement, "g", style.g)
+    APPLY_STYLE_DOUBLE(styleElement, "b", style.b)
+    APPLY_STYLE_DOUBLE(styleElement, "a", style.a)
+    APPLY_STYLE_DOUBLE(styleElement, "size", style.size)
+    APPLY_STYLE_DOUBLE(styleElement, "textwidth", style.textwidth)
+    APPLY_STYLE_DOUBLE(styleElement, "lineheight", style.lineheight)
     cJSON *face = find(styleElement, "face");
     if (face) {
       strcpy(style.face, face->valuestring);
@@ -207,6 +207,38 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
     cJSON *link = find(styleElement, "link");
     if (link) {
       strcpy(style.link, link->valuestring);
+    }
+    cJSON *contentNode = styleElement->child;
+    while (1) {
+      if (!contentNode) {
+        break;
+      }
+      if (strcmp("line", contentNode->string) == 0) {
+        puts(contentNode->string);
+        double x1, x2, y1, y2;
+        double r = 0;
+        double g = 0;
+        double b = 0;
+        double a = 1;
+        double linewidth = 1;
+        APPLY_STYLE_DOUBLE(contentNode, "x1", x1);
+        APPLY_STYLE_DOUBLE(contentNode, "x2", x2);
+        APPLY_STYLE_DOUBLE(contentNode, "y1", y1);
+        APPLY_STYLE_DOUBLE(contentNode, "y2", y2);
+        APPLY_STYLE_DOUBLE(contentNode, "linewidth", linewidth);
+        APPLY_STYLE_DOUBLE(contentNode, "r", r);
+        APPLY_STYLE_DOUBLE(contentNode, "g", g);
+        APPLY_STYLE_DOUBLE(contentNode, "b", b);
+        APPLY_STYLE_DOUBLE(contentNode, "a", a);
+
+        cairo_set_source_rgba(cr, r, g, b, a);
+        cairo_set_line_width(cr, linewidth);
+        cairo_move_to(cr, x1, y1);
+        cairo_line_to(cr, x2, y2);
+        printf("%f %f %f %f\n", x1, y1, x2, y2);
+        cairo_stroke(cr);
+      }
+      contentNode = contentNode->next;
     }
   }
 
