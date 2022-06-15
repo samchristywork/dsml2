@@ -214,7 +214,6 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
         break;
       }
       if (strcmp("line", contentNode->string) == 0) {
-        puts(contentNode->string);
         double x1, x2, y1, y2;
         double r = 0;
         double g = 0;
@@ -231,11 +230,15 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
         APPLY_STYLE_DOUBLE(contentNode, "b", b);
         APPLY_STYLE_DOUBLE(contentNode, "a", a);
 
+        x1 += style.x;
+        x2 += style.x;
+        y1 += style.y;
+        y2 += style.y;
+
         cairo_set_source_rgba(cr, r, g, b, a);
         cairo_set_line_width(cr, linewidth);
         cairo_move_to(cr, x1, y1);
         cairo_line_to(cr, x2, y2);
-        printf("%f %f %f %f\n", x1, y1, x2, y2);
         cairo_stroke(cr);
       }
       contentNode = contentNode->next;
