@@ -22,11 +22,11 @@
 struct style {
   float x;
   float y;
-  float xoffset;
-  float yoffset;
+  float xOffset;
+  float yOffset;
   float size;
-  float textwidth;
-  float lineheight;
+  float textWidth;
+  float lineHeight;
   float r;
   float g;
   float b;
@@ -121,29 +121,6 @@ cJSON *readJSONFile(FILE *f) {
 }
 
 /*
- * Traverse an entire JSON tree, printing out nodes with proper indentation
- * along the way.
- */
-void _traverse(cJSON *cjson, int depth) {
-  cJSON *node = cjson;
-  while (1) {
-    if (!node) {
-      break;
-    }
-    for (int i = 0; i < depth; i++) {
-      printf(" ");
-    }
-    puts(node->string);
-    if (node->child) {
-      _traverse(node->child, depth + 1);
-    }
-    node = node->next;
-  }
-}
-
-void traverse(cJSON *cjson) { _traverse(cjson, 0); }
-
-/*
  * Checks a node and all of its siblings for a particular key string.
  */
 cJSON *find(cJSON *tree, char *str) {
@@ -198,8 +175,8 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
     APPLY_STYLE_DOUBLE(styleElement, "b", style.b)
     APPLY_STYLE_DOUBLE(styleElement, "a", style.a)
     APPLY_STYLE_DOUBLE(styleElement, "size", style.size)
-    APPLY_STYLE_DOUBLE(styleElement, "textwidth", style.textwidth)
-    APPLY_STYLE_DOUBLE(styleElement, "lineheight", style.lineheight)
+    APPLY_STYLE_DOUBLE(styleElement, "textWidth", style.textWidth)
+    APPLY_STYLE_DOUBLE(styleElement, "lineHeight", style.lineHeight)
     cJSON *face = find(styleElement, "face");
     if (face) {
       strcpy(style.face, face->valuestring);
@@ -219,12 +196,12 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
         double g = 0;
         double b = 0;
         double a = 1;
-        double linewidth = 1;
+        double lineWidth = 1;
         APPLY_STYLE_DOUBLE(contentNode, "x1", x1);
         APPLY_STYLE_DOUBLE(contentNode, "x2", x2);
         APPLY_STYLE_DOUBLE(contentNode, "y1", y1);
         APPLY_STYLE_DOUBLE(contentNode, "y2", y2);
-        APPLY_STYLE_DOUBLE(contentNode, "linewidth", linewidth);
+        APPLY_STYLE_DOUBLE(contentNode, "lineWidth", lineWidth);
         APPLY_STYLE_DOUBLE(contentNode, "r", r);
         APPLY_STYLE_DOUBLE(contentNode, "g", g);
         APPLY_STYLE_DOUBLE(contentNode, "b", b);
@@ -236,7 +213,7 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
         y2 += style.y;
 
         cairo_set_source_rgba(cr, r, g, b, a);
-        cairo_set_line_width(cr, linewidth);
+        cairo_set_line_width(cr, lineWidth);
         cairo_move_to(cr, x1, y1);
         cairo_line_to(cr, x2, y2);
         cairo_stroke(cr);
@@ -272,7 +249,7 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
        */
       RsvgHandle *rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
       if (!rsvg) {
-        printf("File was not found locally, downloading.\n");
+        fprintf(stderr, "File was not found locally, downloading.\n");
         CURL *handle = curl_easy_init();
         if (handle) {
           FILE *f = fopen(n->valuestring, "wb");
@@ -318,14 +295,14 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
      * Render the text
      */
     cairo_text_extents_t extents;
-    if (style.textwidth == 0) {
+    if (style.textWidth == 0) {
       cairo_text_extents(cr, content->valuestring, &extents);
       if (style.link[0]) {
         cairo_tag_begin(cr, CAIRO_TAG_LINK, style.link);
         cairo_set_source_rgba(cr, 0, 0, 1, 1);
         cairo_set_line_width(cr, 1);
-        cairo_move_to(cr, style.x, style.y + style.size * .1);
-        cairo_line_to(cr, style.x + extents.width, style.y + style.size * .1);
+        cairo_move_to(cr, style.x, style.y + style.size * .2);
+        cairo_line_to(cr, style.x + extents.width, style.y + style.size * .2);
         cairo_stroke(cr);
       }
       cairo_move_to(cr, style.x, style.y);
@@ -347,7 +324,7 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
         }
         for (int i = strlen(str); i > 0; i--) {
           cairo_text_extents(cr, str, &extents);
-          if (extents.width < style.textwidth) {
+          if (extents.width < style.textWidth) {
             j += i;
             break;
           }
@@ -359,15 +336,15 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
           cairo_set_source_rgba(cr, 0, 0, 1, 1);
           cairo_set_line_width(cr, 1);
           cairo_move_to(cr, style.x,
-                        style.y + k * style.size * style.lineheight +
-                            style.size * .1);
+                        style.y + k * style.size * style.lineHeight +
+                            style.size * .2);
           cairo_line_to(cr, style.x + extents.width,
-                        style.y + k * style.size * style.lineheight +
-                            style.size * .1);
+                        style.y + k * style.size * style.lineHeight +
+                            style.size * .2);
           cairo_stroke(cr);
         }
 
-        cairo_move_to(cr, style.x, style.y + k * style.size * style.lineheight);
+        cairo_move_to(cr, style.x, style.y + k * style.size * style.lineHeight);
         cairo_show_text(cr, str);
 
         if (style.link[0]) {
@@ -400,11 +377,11 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
 
     cJSON *styleElement = find(stylesheet, "_style");
     if (styleElement) {
-      cJSON *x = find(styleElement, "xoffset");
+      cJSON *x = find(styleElement, "xOffset");
       if (x) {
         style.x += x->valuedouble;
       }
-      cJSON *y = find(styleElement, "yoffset");
+      cJSON *y = find(styleElement, "yOffset");
       if (y) {
         style.y += y->valuedouble;
       }
@@ -421,7 +398,7 @@ void simultaneous_traversal(cJSON *content, cJSON *stylesheet) {
   struct style style = {0};
   style.size = 12;
   style.a = 1;
-  style.lineheight = 1.5;
+  style.lineHeight = 1.5;
   strcpy(style.face, "Sans");
   _simultaneous_traversal(content, stylesheet, 0, style);
 }
