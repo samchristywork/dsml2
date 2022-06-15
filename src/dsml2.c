@@ -1,7 +1,9 @@
 #include <cairo-pdf.h>
 #include <cjson/cJSON.h>
 #include <curl/curl.h>
+#include <lauxlib.h>
 #include <librsvg-2.0/librsvg/rsvg.h>
+#include <lualib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,19 +35,12 @@ struct style {
 /*
  * Macros for applying style information.
  */
-#define ADD_STYLE_INT(a, b)                                                    \
+#define ADD_STYLE_DOUBLE(a, b)                                                 \
   {                                                                            \
     cJSON *s = find(styleElement, a);                                          \
     if (s) {                                                                   \
-      b += s->valueint;                                                        \
-    }                                                                          \
-  }
-
-#define APPLY_STYLE_INT(a, b)                                                  \
-  {                                                                            \
-    cJSON *s = find(styleElement, a);                                          \
-    if (s) {                                                                   \
-      b = s->valueint;                                                         \
+      lua_eval(s);                                                             \
+      b += s->valuedouble;                                                     \
     }                                                                          \
   }
 
@@ -53,6 +48,7 @@ struct style {
   {                                                                            \
     cJSON *s = find(styleElement, a);                                          \
     if (s) {                                                                   \
+      lua_eval(s);                                                             \
       b = s->valuedouble;                                                      \
     }                                                                          \
   }
@@ -61,6 +57,11 @@ struct style {
  * The Cairo context object.
  */
 cairo_t *cr;
+
+/*
+ * The Lua state object.
+ */
+lua_State *L;
 
 void usage(char *argv[]) {
   fprintf(stderr,
@@ -161,6 +162,24 @@ cJSON *find(cJSON *tree, char *str) {
 }
 
 /*
+ * Evaluate an arithmetic expression in the `valuestring` field of the cJSON
+ * struct, and place the floating point contents into the `valuedouble` field.
+ * Cause program exit on invalid input.
+ */
+void lua_eval(cJSON *c) {
+  if (cJSON_IsString(c)) {
+    lua_getglobal(L, "eval");
+    lua_pushstring(L, c->valuestring);
+    int error = lua_pcall(L, 1, 1, 0);
+    c->valuedouble = lua_tonumber(L, -1);
+    if (error) {
+      fprintf(stderr, "%s\n", lua_tostring(L, -1));
+      exit(EXIT_FAILURE);
+    }
+  }
+}
+
+/*
  * This function traverses the content and stylesheet trees simultaneously and
  * applies style information and draws elements along the way.
  */
@@ -169,8 +188,8 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
 
   cJSON *styleElement = find(stylesheet, "_style");
   if (styleElement) {
-    ADD_STYLE_INT("x", style.x)
-    ADD_STYLE_INT("y", style.y)
+    ADD_STYLE_DOUBLE("x", style.x)
+    ADD_STYLE_DOUBLE("y", style.y)
     APPLY_STYLE_DOUBLE("r", style.r)
     APPLY_STYLE_DOUBLE("g", style.g)
     APPLY_STYLE_DOUBLE("b", style.b)
@@ -282,11 +301,11 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
     if (styleElement) {
       cJSON *x = find(styleElement, "xoffset");
       if (x) {
-        style.x += x->valueint;
+        style.x += x->valuedouble;
       }
       cJSON *y = find(styleElement, "yoffset");
       if (y) {
-        style.y += y->valueint;
+        style.y += y->valuedouble;
       }
     }
 
@@ -310,6 +329,23 @@ int main(int argc, char *argv[]) {
   char outfileName[256] = "/dev/stdout";
   FILE *contentFile = NULL;
   FILE *stylesheetFile = NULL;
+
+  /*
+   * Initialize the Lua library
+   */
+
+  L = luaL_newstate();
+  luaL_openlibs(L);
+
+  /*
+   * Evaluate a string that defines a function
+   */
+  buf = "function eval(n);return load('return '..n)();end";
+  error = luaL_loadbuffer(L, buf, strlen(buf), "") || lua_pcall(L, 0, 0, 0);
+  if (error) {
+    fprintf(stderr, "%s\n", lua_tostring(L, -1));
+    exit(EXIT_FAILURE);
+  }
 
   /*
    * Handle program arguments.
@@ -397,4 +433,6 @@ int main(int argc, char *argv[]) {
   fclose(stylesheetFile);
   cJSON_Delete(content);
   cJSON_Delete(stylesheet);
+
+  lua_close(L);
 }
