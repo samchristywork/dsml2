@@ -348,7 +348,7 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
         }
         for (int i = strlen(str); i > 0; i--) {
           cairo_text_extents(cr, str, &extents);
-          if (extents.width < style.textWidth) {
+          if (extents.width < style.textWidth && (str[i] == ' ' || str[i] == 0)) {
             j += i;
             break;
           }
