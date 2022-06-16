@@ -166,40 +166,33 @@ void lua_eval(cJSON *c) {
   }
 }
 
-/*
- * This function traverses the content and stylesheet trees simultaneously and
- * applies style information and draws elements along the way.
- */
-void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
-                             struct style style) {
-
-  cJSON *styleElement = find(stylesheet, "_style");
+void applyStyles(cJSON *styleElement, struct style *style) {
   if (styleElement) {
-    ADD_STYLE_DOUBLE(styleElement, "x", style.x)
-    ADD_STYLE_DOUBLE(styleElement, "y", style.y)
-    APPLY_STYLE_DOUBLE(styleElement, "r", style.r)
-    APPLY_STYLE_DOUBLE(styleElement, "g", style.g)
-    APPLY_STYLE_DOUBLE(styleElement, "b", style.b)
-    APPLY_STYLE_DOUBLE(styleElement, "a", style.a)
-    APPLY_STYLE_DOUBLE(styleElement, "size", style.size)
-    APPLY_STYLE_DOUBLE(styleElement, "textWidth", style.textWidth)
-    APPLY_STYLE_DOUBLE(styleElement, "lineHeight", style.lineHeight)
+    ADD_STYLE_DOUBLE(styleElement, "x", style->x)
+    ADD_STYLE_DOUBLE(styleElement, "y", style->y)
+    APPLY_STYLE_DOUBLE(styleElement, "r", style->r)
+    APPLY_STYLE_DOUBLE(styleElement, "g", style->g)
+    APPLY_STYLE_DOUBLE(styleElement, "b", style->b)
+    APPLY_STYLE_DOUBLE(styleElement, "a", style->a)
+    APPLY_STYLE_DOUBLE(styleElement, "size", style->size)
+    APPLY_STYLE_DOUBLE(styleElement, "textWidth", style->textWidth)
+    APPLY_STYLE_DOUBLE(styleElement, "lineHeight", style->lineHeight)
     cJSON *face = find(styleElement, "face");
     if (face) {
-      strcpy(style.face, face->valuestring);
+      strcpy(style->face, face->valuestring);
     }
     cJSON *link = find(styleElement, "link");
     if (link) {
-      strcpy(style.link, link->valuestring);
+      strcpy(style->link, link->valuestring);
     }
     cJSON *textAlign = find(styleElement, "textAlign");
     if (textAlign) {
       if (strcmp("center", textAlign->valuestring) == 0) {
-        style.textAlign = ALIGN_CENTER;
+        style->textAlign = ALIGN_CENTER;
       } else if (strcmp("left", textAlign->valuestring) == 0) {
-        style.textAlign = ALIGN_LEFT;
+        style->textAlign = ALIGN_LEFT;
       } else if (strcmp("right", textAlign->valuestring) == 0) {
-        style.textAlign = ALIGN_RIGHT;
+        style->textAlign = ALIGN_RIGHT;
       }
     }
     cJSON *contentNode = styleElement->child;
@@ -224,10 +217,10 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
         APPLY_STYLE_DOUBLE(contentNode, "b", b);
         APPLY_STYLE_DOUBLE(contentNode, "a", a);
 
-        x1 += style.x;
-        x2 += style.x;
-        y1 += style.y;
-        y2 += style.y;
+        x1 += style->x;
+        x2 += style->x;
+        y1 += style->y;
+        y2 += style->y;
 
         cairo_set_source_rgba(cr, r, g, b, a);
         cairo_set_line_width(cr, lineWidth);
@@ -238,6 +231,17 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
       contentNode = contentNode->next;
     }
   }
+}
+
+/*
+ * This function traverses the content and stylesheet trees simultaneously and
+ * applies style information and draws elements along the way.
+ */
+void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
+                             struct style style) {
+
+  cJSON *styleElement = find(stylesheet, "_style");
+  applyStyles(styleElement, &style);
 
   /*
    * This section of code is run whenever the "icon" element is encountered
