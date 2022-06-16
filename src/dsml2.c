@@ -233,15 +233,7 @@ void applyStyles(cJSON *styleElement, struct style *style) {
   }
 }
 
-/*
- * This function traverses the content and stylesheet trees simultaneously and
- * applies style information and draws elements along the way.
- */
-void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
-                             struct style style) {
-
-  cJSON *styleElement = find(stylesheet, "_style");
-  applyStyles(styleElement, &style);
+void handleIcons(cJSON *stylesheet, struct style *style) {
 
   /*
    * This section of code is run whenever the "icon" element is encountered
@@ -261,8 +253,8 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
        * Save the context and apply transformations
        */
       cairo_save(cr);
-      cairo_translate(cr, style.x, style.y);
-      cairo_scale(cr, style.size, style.size);
+      cairo_translate(cr, style->x, style->y);
+      cairo_scale(cr, style->size, style->size);
 
       /*
        * Try to open the image, download it from the internet if that doesn't
@@ -301,6 +293,19 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
       cairo_restore(cr);
     }
   }
+}
+
+/*
+ * This function traverses the content and stylesheet trees simultaneously and
+ * applies style information and draws elements along the way.
+ */
+void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
+                             struct style style) {
+
+  cJSON *styleElement = find(stylesheet, "_style");
+  applyStyles(styleElement, &style);
+
+  handleIcons(stylesheet, &style);
 
   if (cJSON_IsString(content) && content->valuestring) {
 
