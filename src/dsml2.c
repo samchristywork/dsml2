@@ -295,52 +295,41 @@ void handleIcons(cJSON *stylesheet, struct style *style) {
   }
 }
 
-/*
- * This function traverses the content and stylesheet trees simultaneously and
- * applies style information and draws elements along the way.
- */
-void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
-                             struct style style) {
-
-  cJSON *styleElement = find(stylesheet, "_style");
-  applyStyles(styleElement, &style);
-
-  handleIcons(stylesheet, &style);
-
+void renderText(cJSON *content, struct style *style) {
   if (cJSON_IsString(content) && content->valuestring) {
 
     /*
      * Configure the style of text that is to be displayed
      */
-    cairo_set_source_rgba(cr, style.r, style.g, style.b, style.a);
-    cairo_set_font_size(cr, style.size);
-    cairo_select_font_face(cr, style.face, CAIRO_FONT_SLANT_NORMAL,
+    cairo_set_source_rgba(cr, style->r, style->g, style->b, style->a);
+    cairo_set_font_size(cr, style->size);
+    cairo_select_font_face(cr, style->face, CAIRO_FONT_SLANT_NORMAL,
                            CAIRO_FONT_WEIGHT_NORMAL);
 
     /*
      * Render the text
      */
     cairo_text_extents_t extents;
-    if (style.textWidth == 0) {
+    if (style->textWidth == 0) {
       cairo_text_extents(cr, content->valuestring, &extents);
-      if (style.link[0]) {
-        cairo_tag_begin(cr, CAIRO_TAG_LINK, style.link);
+      if (style->link[0]) {
+        cairo_tag_begin(cr, CAIRO_TAG_LINK, style->link);
         cairo_set_source_rgba(cr, 0, 0, 1, 1);
         cairo_set_line_width(cr, 1);
-        cairo_move_to(cr, style.x, style.y + style.size * .2);
-        cairo_line_to(cr, style.x + extents.width, style.y + style.size * .2);
+        cairo_move_to(cr, style->x, style->y + style->size * .2);
+        cairo_line_to(cr, style->x + extents.width, style->y + style->size * .2);
         cairo_stroke(cr);
       }
 
       float offsetx = 0;
-      if (style.textAlign == ALIGN_CENTER) {
+      if (style->textAlign == ALIGN_CENTER) {
         offsetx -= extents.width / 2;
-      } else if (style.textAlign == ALIGN_RIGHT) {
+      } else if (style->textAlign == ALIGN_RIGHT) {
         offsetx -= extents.width;
       }
-      cairo_move_to(cr, style.x + offsetx, style.y);
+      cairo_move_to(cr, style->x + offsetx, style->y);
       cairo_show_text(cr, content->valuestring);
-      if (style.link[0]) {
+      if (style->link[0]) {
         cairo_tag_end(cr, CAIRO_TAG_LINK);
       }
     } else {
@@ -357,42 +346,57 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
         }
         for (int i = strlen(str); i > 0; i--) {
           cairo_text_extents(cr, str, &extents);
-          if (extents.width < style.textWidth && (str[i] == ' ' || str[i] == 0)) {
+          if (extents.width < style->textWidth && (str[i] == ' ' || str[i] == 0)) {
             j += i;
             break;
           }
           str[i] = 0;
         }
 
-        if (style.link[0]) {
-          cairo_tag_begin(cr, CAIRO_TAG_LINK, style.link);
+        if (style->link[0]) {
+          cairo_tag_begin(cr, CAIRO_TAG_LINK, style->link);
           cairo_set_source_rgba(cr, 0, 0, 1, 1);
           cairo_set_line_width(cr, 1);
-          cairo_move_to(cr, style.x,
-                        style.y + k * style.size * style.lineHeight +
-                            style.size * .2);
-          cairo_line_to(cr, style.x + extents.width,
-                        style.y + k * style.size * style.lineHeight +
-                            style.size * .2);
+          cairo_move_to(cr, style->x,
+                        style->y + k * style->size * style->lineHeight +
+                            style->size * .2);
+          cairo_line_to(cr, style->x + extents.width,
+                        style->y + k * style->size * style->lineHeight +
+                            style->size * .2);
           cairo_stroke(cr);
         }
 
         float offsetx = 0;
-        if (style.textAlign == ALIGN_CENTER) {
+        if (style->textAlign == ALIGN_CENTER) {
           offsetx -= extents.width / 2;
-        } else if (style.textAlign == ALIGN_RIGHT) {
+        } else if (style->textAlign == ALIGN_RIGHT) {
           offsetx -= extents.width;
         }
-        cairo_move_to(cr, style.x + offsetx, style.y + k * style.size * style.lineHeight);
+        cairo_move_to(cr, style->x + offsetx, style->y + k * style->size * style->lineHeight);
         cairo_show_text(cr, str);
 
-        if (style.link[0]) {
+        if (style->link[0]) {
           cairo_tag_end(cr, CAIRO_TAG_LINK);
         }
       }
       free(str);
     }
   }
+}
+
+/*
+ * This function traverses the content and stylesheet trees simultaneously and
+ * applies style information and draws elements along the way.
+ */
+void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
+                             struct style style) {
+
+  cJSON *styleElement = find(stylesheet, "_style");
+  applyStyles(styleElement, &style);
+
+  handleIcons(stylesheet, &style);
+
+  renderText(content, &style);
 
   cJSON *contentNode = content->child;
 
