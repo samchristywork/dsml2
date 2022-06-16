@@ -2,7 +2,17 @@
 
 ## Overview
 
-DSML2 is a subset of the JSON programming language that is used for typesetting
+Traditional document preparation systems like Microsoft Word, Libreoffice, and
+LaTeX conceptualize text elements as rectangles, and use collision and reflow
+algorithms to format text around these rectangles. This is great for long form
+textual content like books, essays, and scientific papers, but is a poor
+solution for more structured documents like infographics, résumés, and websites.
+For the latter category, tree-based document preparation systems like HTML/CSS,
+and XML are superior.
+
+DSML Version 2 is a tree based documentation system designed to fill the gap
+where Word and LaTeX are too inflexible, and HTML/CSS doesn't apply. DSML2 it is
+a subset of the JSON data interchange format that is used for typesetting
 documents. This repository contains the source for the interpreter for this
 language, and associated sample files.
 
