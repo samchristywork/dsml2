@@ -433,6 +433,40 @@ void simultaneous_traversal(cJSON *content, cJSON *stylesheet) {
   _simultaneous_traversal(content, stylesheet, 0, style);
 }
 
+void collectConstants(cJSON *stylesheet) {
+  cJSON *styleElement = find(stylesheet, "_constants");
+  if (styleElement) {
+    cJSON *node = NULL;
+
+    node = styleElement->child;
+    while (1) {
+      if (!node) {
+        break;
+      }
+
+      /*
+       * Evaluate a string that sets up some global variables.
+       */
+      char buf[256];
+      if (cJSON_IsString(node)) {
+        snprintf(buf, 255, "%s = %s;", node->string, node->valuestring);
+      } else if (cJSON_IsNumber(node)) {
+        snprintf(buf, 255, "%s = %f;", node->string, node->valuedouble);
+      } else {
+        fprintf(stderr, "JSON node unknown format.\n");
+        exit(EXIT_FAILURE);
+      }
+      int error = luaL_loadbuffer(L, buf, strlen(buf), "") || lua_pcall(L, 0, 0, 0);
+      if (error) {
+        fprintf(stderr, "%s\n", lua_tostring(L, -1));
+        exit(EXIT_FAILURE);
+      }
+
+      node = node->next;
+    }
+  }
+}
+
 int main(int argc, char *argv[]) {
 
   char outfileName[256] = "/dev/stdout";
@@ -523,39 +557,9 @@ int main(int argc, char *argv[]) {
   cJSON *stylesheet = readJSONFile(stylesheetFile);
 
   /*
-   * Collect all of the constants
+   * Evaluate all constants for use throughout the stylesheet tree
    */
-  cJSON *styleElement = find(stylesheet, "_constants");
-  if (styleElement) {
-    cJSON *node = NULL;
-
-    node = styleElement->child;
-    while (1) {
-      if (!node) {
-        break;
-      }
-
-      /*
-       * Evaluate a string that sets up some global variables.
-       */
-      char buf[256];
-      if (cJSON_IsString(node)) {
-        snprintf(buf, 255, "%s = %s;", node->string, node->valuestring);
-      } else if (cJSON_IsNumber(node)) {
-        snprintf(buf, 255, "%s = %f;", node->string, node->valuedouble);
-      } else {
-        fprintf(stderr, "JSON node unknown format.\n");
-        exit(EXIT_FAILURE);
-      }
-      error = luaL_loadbuffer(L, buf, strlen(buf), "") || lua_pcall(L, 0, 0, 0);
-      if (error) {
-        fprintf(stderr, "%s\n", lua_tostring(L, -1));
-        exit(EXIT_FAILURE);
-      }
-
-      node = node->next;
-    }
-  }
+  collectConstants(stylesheet);
 
   simultaneous_traversal(content, stylesheet);
 
