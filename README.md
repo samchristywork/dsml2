@@ -18,12 +18,17 @@ language, and associated sample files.
 
 ## Usage
 
+The DSML2 interpreter can be invoked as described in the usage statement:
+
 ```
-Usage: ./build/dsml2 [-c content] [-s stylesheet] [-o output file]
+Usage: dsml2 [-c content] [-s stylesheet] [-o output file]
  -c     The file that contains the document content. Default "content.json".
  -s     The file that contains the document style. Default "stylesheet.json".
  -s     The output file. Defaults to stdout.
 ```
+
+Instructions for writing input files in the DSML language can be found in ![the
+DSML2 primer](./PRIMER.md).
 
 ## Dependencies
 
