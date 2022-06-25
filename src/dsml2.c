@@ -4,6 +4,7 @@
 #include <lauxlib.h>
 #include <librsvg-2.0/librsvg/rsvg.h>
 #include <lualib.h>
+#include <pango/pangocairo.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -302,85 +303,26 @@ void renderText(cJSON *content, struct style *style) {
      * Configure the style of text that is to be displayed
      */
     cairo_set_source_rgba(cr, style->r, style->g, style->b, style->a);
-    cairo_set_font_size(cr, style->size);
-    cairo_select_font_face(cr, style->face, CAIRO_FONT_SLANT_NORMAL,
-                           CAIRO_FONT_WEIGHT_NORMAL);
+    PangoFontDescription *font_description = pango_font_description_new();
+    pango_font_description_set_family(font_description, style->face);
+    pango_font_description_set_absolute_size(font_description,
+                                             style->size * PANGO_SCALE);
+
+    PangoLayout *layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, font_description);
 
     /*
      * Render the text
      */
-    cairo_text_extents_t extents;
-    if (style->textWidth == 0) {
-      cairo_text_extents(cr, content->valuestring, &extents);
-      if (style->link[0]) {
-        cairo_tag_begin(cr, CAIRO_TAG_LINK, style->link);
-        cairo_set_source_rgba(cr, 0, 0, 1, 1);
-        cairo_set_line_width(cr, 1);
-        cairo_move_to(cr, style->x, style->y + style->size * .2);
-        cairo_line_to(cr, style->x + extents.width, style->y + style->size * .2);
-        cairo_stroke(cr);
-      }
+    pango_layout_set_markup(layout, content->valuestring, -1);
+    cairo_move_to(cr, style->x, style->y);
+    pango_cairo_show_layout(cr, layout);
 
-      float offsetx = 0;
-      if (style->textAlign == ALIGN_CENTER) {
-        offsetx -= extents.width / 2;
-      } else if (style->textAlign == ALIGN_RIGHT) {
-        offsetx -= extents.width;
-      }
-      cairo_move_to(cr, style->x + offsetx, style->y);
-      cairo_show_text(cr, content->valuestring);
-      if (style->link[0]) {
-        cairo_tag_end(cr, CAIRO_TAG_LINK);
-      }
-    } else {
-      char *str = malloc(strlen(content->valuestring) + 1);
-      int j = 0;
-
-      for (int k = 0;; k++) {
-        while (content->valuestring[j] == ' ') {
-          j++;
-        }
-        strcpy(str, content->valuestring + j);
-        if (strlen(str) == 0) {
-          break;
-        }
-        for (int i = strlen(str); i > 0; i--) {
-          cairo_text_extents(cr, str, &extents);
-          if (extents.width < style->textWidth && (str[i] == ' ' || str[i] == 0)) {
-            j += i;
-            break;
-          }
-          str[i] = 0;
-        }
-
-        if (style->link[0]) {
-          cairo_tag_begin(cr, CAIRO_TAG_LINK, style->link);
-          cairo_set_source_rgba(cr, 0, 0, 1, 1);
-          cairo_set_line_width(cr, 1);
-          cairo_move_to(cr, style->x,
-                        style->y + k * style->size * style->lineHeight +
-                            style->size * .2);
-          cairo_line_to(cr, style->x + extents.width,
-                        style->y + k * style->size * style->lineHeight +
-                            style->size * .2);
-          cairo_stroke(cr);
-        }
-
-        float offsetx = 0;
-        if (style->textAlign == ALIGN_CENTER) {
-          offsetx -= extents.width / 2;
-        } else if (style->textAlign == ALIGN_RIGHT) {
-          offsetx -= extents.width;
-        }
-        cairo_move_to(cr, style->x + offsetx, style->y + k * style->size * style->lineHeight);
-        cairo_show_text(cr, str);
-
-        if (style->link[0]) {
-          cairo_tag_end(cr, CAIRO_TAG_LINK);
-        }
-      }
-      free(str);
-    }
+    /*
+     * Cleanup
+     */
+    g_object_unref(layout);
+    pango_font_description_free(font_description);
   }
 }
 
