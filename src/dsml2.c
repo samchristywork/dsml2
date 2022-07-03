@@ -37,6 +37,7 @@ struct style {
   float b;
   float a;
   float width;
+  int stripNewlines;
   int textAlign;
   char face[256];
   char link[256];
@@ -214,6 +215,14 @@ void applyStyles(cJSON *styleElement, struct style *style) {
     APPLY_STYLE_DOUBLE(styleElement, "width", style->width)
     APPLY_STYLE_DOUBLE(styleElement, "textWidth", style->textWidth)
     APPLY_STYLE_DOUBLE(styleElement, "lineHeight", style->lineHeight)
+    cJSON *stripNewlines = find(styleElement, "stripNewlines");
+    if (stripNewlines) {
+      if (cJSON_IsBool(stripNewlines)) {
+        if (cJSON_IsTrue(stripNewlines)) {
+          style->stripNewlines = 1;
+        }
+      }
+    }
     cJSON *face = find(styleElement, "face");
     if (face) {
       strcpy(style->face, face->valuestring);
@@ -405,6 +414,14 @@ void renderText(cJSON *content, struct style *style) {
             exit(EXIT_FAILURE);
           }
           rewind(f);
+
+          if (style->stripNewlines) {
+            for (int i = 0; i < size; i++) {
+              if (buffer[i] == '\n') {
+                buffer[i] = ' ';
+              }
+            }
+          }
 
           pango_layout_set_markup(layout, buffer, -1);
         }
