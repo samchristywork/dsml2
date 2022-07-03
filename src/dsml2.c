@@ -339,7 +339,13 @@ void renderText(cJSON *content, struct style *style) {
     /*
      * Render the text
      */
-    pango_layout_set_markup(layout, content->valuestring, -1);
+    if (strcmp(content->valuestring, "CURRENT_DATE") == 0) {
+      time_t now;
+      time(&now);
+      pango_layout_set_markup(layout, ctime(&now), -1);
+    } else {
+      pango_layout_set_markup(layout, content->valuestring, -1);
+    }
     cairo_move_to(cr, style->x, style->y);
     pango_cairo_show_layout(cr, layout);
 
