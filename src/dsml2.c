@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include <zlib.h>
 
+#define DSML_VERSION "2.0.0"
+
 /*
  * Points are the unit of measurement used by Cairo. 1 point is equal to 1/72
  * inches.
@@ -76,6 +78,9 @@ cairo_t *cr;
  * The Lua state object.
  */
 lua_State *L;
+
+unsigned int contentChecksum;
+unsigned int stylesheetChecksum;
 
 void usage(char *argv[]) {
   fprintf(stderr,
@@ -369,6 +374,10 @@ void renderText(cJSON *content, struct style *style) {
       time_t now;
       time(&now);
       pango_layout_set_markup(layout, ctime(&now), -1);
+    } else if (strcmp(content->valuestring, "REV") == 0) {
+      char buf[256];
+      snprintf(buf, 255, "%s:%x:%x", DSML_VERSION, contentChecksum, stylesheetChecksum);
+      pango_layout_set_markup(layout, buf, -1);
     } else {
       pango_layout_set_markup(layout, content->valuestring, -1);
     }
@@ -557,6 +566,16 @@ int main(int argc, char *argv[]) {
       usage(argv);
     }
   }
+
+  /*
+   * Generate checksums.
+   */
+
+  contentChecksum = checksumFile(contentFile);
+  stylesheetChecksum = checksumFile(stylesheetFile);
+  fprintf(stdout, "DSML version: %s\n", DSML_VERSION);
+  fprintf(stdout, "Content file checksum: %x\n", contentChecksum);
+  fprintf(stdout, "Style file checksum: %x\n", stylesheetChecksum);
 
   /*
    * Initialize the Cairo surface
