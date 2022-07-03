@@ -118,6 +118,7 @@ unsigned int checksumFile(FILE *f) {
     fprintf(stderr, "Could not read the expected number of bytes.\n");
     exit(EXIT_FAILURE);
   }
+  rewind(f);
 
   unsigned long crc = crc32(0L, Z_NULL, 0);
   crc = crc32(crc, buffer, size);
