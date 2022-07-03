@@ -374,6 +374,34 @@ void renderText(cJSON *content, struct style *style) {
       time_t now;
       time(&now);
       pango_layout_set_markup(layout, ctime(&now), -1);
+    } else if (strncmp(content->valuestring, "INCLUDE:", strlen("INCLUDE:")) == 0) {
+      for (int i = 0; i < strlen(content->valuestring); i++) {
+        if (content->valuestring[i] == ':') {
+          FILE *f = fopen(content->valuestring + i + 1, "rb");
+          if (!f) {
+            perror("fopen");
+            exit(EXIT_FAILURE);
+          }
+
+          fseek(f, 0, SEEK_END);
+          int size = ftell(f);
+          rewind(f);
+
+          /*
+           * Read the file data into memory
+           */
+          char buffer[size + 1];
+          buffer[size] = 0;
+          int ret = fread(buffer, 1, size, f);
+          if (ret != size) {
+            fprintf(stderr, "Could not read the expected number of bytes.\n");
+            exit(EXIT_FAILURE);
+          }
+          rewind(f);
+
+          pango_layout_set_markup(layout, buffer, -1);
+        }
+      }
     } else if (strcmp(content->valuestring, "REV") == 0) {
       char buf[256];
       snprintf(buf, 255, "%s:%x:%x", DSML_VERSION, contentChecksum, stylesheetChecksum);
