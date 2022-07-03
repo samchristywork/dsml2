@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <zlib.h>
 
 /*
  * Points are the unit of measurement used by Cairo. 1 point is equal to 1/72
@@ -92,6 +93,31 @@ void usage(char *argv[]) {
  */
 size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
   return fwrite(ptr, size, nmemb, stream);
+}
+
+/*
+ * Generate a checksum value from a file stream.
+ */
+unsigned int checksumFile(FILE *f) {
+  fseek(f, 0, SEEK_END);
+  int size = ftell(f);
+  rewind(f);
+
+  /*
+   * Read the file data into memory
+   */
+  unsigned char buffer[size + 1];
+  buffer[size] = 0;
+  int ret = fread(buffer, 1, size, f);
+  if (ret != size) {
+    fprintf(stderr, "Could not read the expected number of bytes.\n");
+    exit(EXIT_FAILURE);
+  }
+
+  unsigned long crc = crc32(0L, Z_NULL, 0);
+  crc = crc32(crc, buffer, size);
+
+  return crc;
 }
 
 cJSON *readJSONFile(FILE *f) {
