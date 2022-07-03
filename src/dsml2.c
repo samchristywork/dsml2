@@ -32,6 +32,7 @@ struct style {
   float g;
   float b;
   float a;
+  float width;
   int textAlign;
   char face[256];
   char link[256];
@@ -176,6 +177,7 @@ void applyStyles(cJSON *styleElement, struct style *style) {
     APPLY_STYLE_DOUBLE(styleElement, "b", style->b)
     APPLY_STYLE_DOUBLE(styleElement, "a", style->a)
     APPLY_STYLE_DOUBLE(styleElement, "size", style->size)
+    APPLY_STYLE_DOUBLE(styleElement, "width", style->width)
     APPLY_STYLE_DOUBLE(styleElement, "textWidth", style->textWidth)
     APPLY_STYLE_DOUBLE(styleElement, "lineHeight", style->lineHeight)
     cJSON *face = find(styleElement, "face");
@@ -310,6 +312,22 @@ void renderText(cJSON *content, struct style *style) {
 
     PangoLayout *layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, font_description);
+
+    if (style->textAlign == ALIGN_CENTER) {
+      pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
+      if (style->width == 0) {
+        fprintf(stderr, "Alignment set to 'center', but missing width.\n");
+      }
+      pango_layout_set_width(layout, PANGO_SCALE * style->width);
+      style->x -= style->width / 2.;
+    } else if (style->textAlign == ALIGN_RIGHT) {
+      pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
+      if (style->width == 0) {
+        fprintf(stderr, "Alignment set to 'right', but missing width.\n");
+      }
+      pango_layout_set_width(layout, PANGO_SCALE * style->width);
+      style->x -= style->width;
+    }
 
     /*
      * Render the text
