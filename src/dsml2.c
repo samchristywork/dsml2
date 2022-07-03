@@ -53,7 +53,7 @@ enum align {
   {                               \
     cJSON *s = find(e, a);        \
     if (s) {                      \
-      lua_eval(s);                \
+      luaEval(s);                 \
       b += s->valuedouble;        \
     }                             \
   }
@@ -62,7 +62,7 @@ enum align {
   {                                 \
     cJSON *s = find(e, a);          \
     if (s) {                        \
-      lua_eval(s);                  \
+      luaEval(s);                   \
       b = s->valuedouble;           \
     }                               \
   }
@@ -182,7 +182,7 @@ cJSON *find(cJSON *tree, char *str) {
  * struct, and place the floating point contents into the `valuedouble` field.
  * Cause program exit on invalid input.
  */
-void lua_eval(cJSON *c) {
+void luaEval(cJSON *c) {
   if (cJSON_IsString(c)) {
     lua_getglobal(L, "eval");
     lua_pushstring(L, c->valuestring);
