@@ -40,7 +40,7 @@ struct style {
   int stripNewlines;
   int textAlign;
   char face[256];
-  char link[256];
+  char uri[256];
 };
 
 enum align {
@@ -227,9 +227,9 @@ void applyStyles(cJSON *styleElement, struct style *style) {
     if (face) {
       strcpy(style->face, face->valuestring);
     }
-    cJSON *link = find(styleElement, "link");
-    if (link) {
-      strcpy(style->link, link->valuestring);
+    cJSON *uri = find(styleElement, "URI");
+    if (uri) {
+      strcpy(style->uri, uri->valuestring);
     }
     cJSON *textAlign = find(styleElement, "textAlign");
     if (textAlign) {
@@ -446,8 +446,14 @@ void renderText(cJSON *content, struct style *style) {
     /*
      * Render the text
      */
+    if (style->uri) {
+      cairo_tag_begin(cr, CAIRO_TAG_LINK, style->uri);
+    }
     cairo_move_to(cr, style->x, style->y);
     pango_cairo_show_layout(cr, layout);
+    if (style->uri) {
+      cairo_tag_end(cr, CAIRO_TAG_LINK);
+    }
 
     /*
      * Cleanup
