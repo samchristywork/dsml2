@@ -368,12 +368,18 @@ void renderText(cJSON *content, struct style *style) {
     }
 
     /*
-     * Render the text
+     * Write out the current date and time.
      */
     if (strcmp(content->valuestring, "CURRENT_DATE") == 0) {
       time_t now;
       time(&now);
       pango_layout_set_markup(layout, ctime(&now), -1);
+
+      /*
+     * Transclusion directive. The token "INCLUDE:" will indicate that the text
+     * after the colon is a filename, the contents of which will be treated as
+     * the text of the current element.
+     */
     } else if (strncmp(content->valuestring, "INCLUDE:", strlen("INCLUDE:")) == 0) {
       for (int i = 0; i < strlen(content->valuestring); i++) {
         if (content->valuestring[i] == ':') {
@@ -402,13 +408,26 @@ void renderText(cJSON *content, struct style *style) {
           pango_layout_set_markup(layout, buffer, -1);
         }
       }
+
+      /*
+     * Replace the text of the current element with the DSML version and
+     * checksums required to build the document.
+     */
     } else if (strcmp(content->valuestring, "REV") == 0) {
       char buf[256];
       snprintf(buf, 255, "%s:%x:%x", DSML_VERSION, contentChecksum, stylesheetChecksum);
       pango_layout_set_markup(layout, buf, -1);
+
+      /*
+     * Reproduce the text verbatim.
+     */
     } else {
       pango_layout_set_markup(layout, content->valuestring, -1);
     }
+
+    /*
+     * Render the text
+     */
     cairo_move_to(cr, style->x, style->y);
     pango_cairo_show_layout(cr, layout);
 
