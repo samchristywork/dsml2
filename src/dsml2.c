@@ -28,6 +28,7 @@ struct style {
   float size;
   float textWidth;
   float lineHeight;
+  float spacing;
   float r;
   float g;
   float b;
@@ -177,6 +178,7 @@ void applyStyles(cJSON *styleElement, struct style *style) {
     APPLY_STYLE_DOUBLE(styleElement, "b", style->b)
     APPLY_STYLE_DOUBLE(styleElement, "a", style->a)
     APPLY_STYLE_DOUBLE(styleElement, "size", style->size)
+    APPLY_STYLE_DOUBLE(styleElement, "spacing", style->spacing)
     APPLY_STYLE_DOUBLE(styleElement, "width", style->width)
     APPLY_STYLE_DOUBLE(styleElement, "textWidth", style->textWidth)
     APPLY_STYLE_DOUBLE(styleElement, "lineHeight", style->lineHeight)
@@ -314,6 +316,8 @@ void renderText(cJSON *content, struct style *style) {
     pango_layout_set_font_description(layout, font_description);
 
     pango_layout_set_justify(layout, TRUE);
+
+    pango_layout_set_line_spacing(layout, style->spacing);
 
     if (style->textAlign == ALIGN_CENTER) {
       pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
