@@ -216,7 +216,7 @@ void applyStyles(cJSON *styleElement, struct style *style) {
         APPLY_STYLE_DOUBLE(contentNode, "x2", x2);
         APPLY_STYLE_DOUBLE(contentNode, "y1", y1);
         APPLY_STYLE_DOUBLE(contentNode, "y2", y2);
-        APPLY_STYLE_DOUBLE(contentNode, "lineWidth", lineWidth);
+        APPLY_STYLE_DOUBLE(contentNode, "width", lineWidth);
         APPLY_STYLE_DOUBLE(contentNode, "r", r);
         APPLY_STYLE_DOUBLE(contentNode, "g", g);
         APPLY_STYLE_DOUBLE(contentNode, "b", b);
