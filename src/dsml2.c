@@ -319,19 +319,20 @@ void renderText(cJSON *content, struct style *style) {
 
     pango_layout_set_line_spacing(layout, style->spacing);
 
+    if (style->width != 0) {
+      pango_layout_set_width(layout, PANGO_SCALE * style->width);
+    }
     if (style->textAlign == ALIGN_CENTER) {
       pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
       if (style->width == 0) {
         fprintf(stderr, "Alignment set to 'center', but missing width.\n");
       }
-      pango_layout_set_width(layout, PANGO_SCALE * style->width);
       style->x -= style->width / 2.;
     } else if (style->textAlign == ALIGN_RIGHT) {
       pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
       if (style->width == 0) {
         fprintf(stderr, "Alignment set to 'right', but missing width.\n");
       }
-      pango_layout_set_width(layout, PANGO_SCALE * style->width);
       style->x -= style->width;
     }
 
