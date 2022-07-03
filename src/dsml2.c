@@ -374,6 +374,11 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
     if (!contentNode) {
       break;
     }
+    fprintf(stdout, "Processing node: ");
+    for (int i = 0; i < depth; i++) {
+      fprintf(stdout, "  ");
+    }
+    fprintf(stdout, "%s\n", contentNode->string);
 
     /*
      * Find the correct node in the stylesheet to follow along
