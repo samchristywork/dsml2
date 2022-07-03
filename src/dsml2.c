@@ -313,6 +313,8 @@ void renderText(cJSON *content, struct style *style) {
     PangoLayout *layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, font_description);
 
+    pango_layout_set_justify(layout, TRUE);
+
     if (style->textAlign == ALIGN_CENTER) {
       pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
       if (style->width == 0) {
