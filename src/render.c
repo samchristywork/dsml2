@@ -134,6 +134,9 @@ void renderText(cairo_t *cr, cJSON *content, style *style) {
       time(&now);
       pango_layout_set_markup(layout, ctime(&now), -1);
 
+    } else if (strncmp(content->string, "pageBreak", strlen("pageBreak")) == 0) {
+      cairo_show_page(cr);
+
       /*
      * Transclusion directive. The token "INCLUDE:" will indicate that the text
      * after the colon is a filename, the contents of which will be treated as
