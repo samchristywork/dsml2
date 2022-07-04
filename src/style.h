@@ -1,6 +1,9 @@
 #ifndef STYLE_H
 #define STYLE_H
 
+#include <lauxlib.h>
+#include <lualib.h>
+
 enum align {
   ALIGN_LEFT = 0,
   ALIGN_CENTER = 1,
@@ -29,8 +32,8 @@ struct style {
   int textAlign;
   char face[256];
   char uri[256];
-};
+} style;
 
-void applyStyles(cairo_t *cr, cJSON *styleElement, struct style *style);
+void applyStyles(cairo_t *cr, cJSON *styleElement, struct style *style, lua_State *L);
 
 #endif

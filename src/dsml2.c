@@ -8,35 +8,9 @@
 
 #include "dsml2.h"
 #include "render.h"
+#include "style.h"
 #include "traverse.h"
-
-/*
- * Macros for applying style information.
- */
-#define ADD_STYLE_DOUBLE(e, a, b) \
-  {                               \
-    cJSON *s = find(e, a);        \
-    if (s) {                      \
-      luaEval(s);                 \
-      b += s->valuedouble;        \
-    }                             \
-  }
-
-#define APPLY_STYLE_DOUBLE(e, a, b) \
-  {                                 \
-    cJSON *s = find(e, a);          \
-    if (s) {                        \
-      luaEval(s);                   \
-      b = s->valuedouble;           \
-    }                               \
-  }
-
-/*
- * The callback that cURL uses to write the icon file to the filesystem.
- */
-size_t write_callback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
-  return fwrite(ptr, size, nmemb, stream);
-}
+#include "version.h"
 
 /*
  * Generate a checksum value from a file stream.
@@ -100,164 +74,7 @@ cJSON *readJSONFile(FILE *f) {
   return cjson;
 }
 
-/*
- * Evaluate an arithmetic expression in the `valuestring` field of the cJSON
- * struct, and place the floating point contents into the `valuedouble` field.
- * Cause program exit on invalid input.
- */
-void luaEval(cJSON *c) {
-  if (cJSON_IsString(c)) {
-    lua_getglobal(L, "eval");
-    lua_pushstring(L, c->valuestring);
-    int error = lua_pcall(L, 1, 1, 0);
-    c->valuedouble = lua_tonumber(L, -1);
-    if (error) {
-      fprintf(stderr, "%s\n", lua_tostring(L, -1));
-      exit(EXIT_FAILURE);
-    }
-  }
-}
-
-void applyStyles(cairo_t *cr, cJSON *styleElement, struct style *style) {
-  if (styleElement) {
-    ADD_STYLE_DOUBLE(styleElement, "x", style->x)
-    ADD_STYLE_DOUBLE(styleElement, "y", style->y)
-    APPLY_STYLE_DOUBLE(styleElement, "r", style->r)
-    APPLY_STYLE_DOUBLE(styleElement, "g", style->g)
-    APPLY_STYLE_DOUBLE(styleElement, "b", style->b)
-    APPLY_STYLE_DOUBLE(styleElement, "a", style->a)
-    APPLY_STYLE_DOUBLE(styleElement, "size", style->size)
-    APPLY_STYLE_DOUBLE(styleElement, "spacing", style->spacing)
-    APPLY_STYLE_DOUBLE(styleElement, "width", style->width)
-    APPLY_STYLE_DOUBLE(styleElement, "textWidth", style->textWidth)
-    APPLY_STYLE_DOUBLE(styleElement, "lineHeight", style->lineHeight)
-    cJSON *stripNewlines = find(styleElement, "stripNewlines");
-    if (stripNewlines) {
-      if (cJSON_IsBool(stripNewlines)) {
-        if (cJSON_IsTrue(stripNewlines)) {
-          style->stripNewlines = 1;
-        }
-      }
-    }
-    cJSON *face = find(styleElement, "face");
-    if (face) {
-      strcpy(style->face, face->valuestring);
-    }
-    cJSON *uri = find(styleElement, "URI");
-    if (uri) {
-      strcpy(style->uri, uri->valuestring);
-    }
-    cJSON *textAlign = find(styleElement, "textAlign");
-    if (textAlign) {
-      if (strcmp("center", textAlign->valuestring) == 0) {
-        style->textAlign = ALIGN_CENTER;
-      } else if (strcmp("left", textAlign->valuestring) == 0) {
-        style->textAlign = ALIGN_LEFT;
-      } else if (strcmp("right", textAlign->valuestring) == 0) {
-        style->textAlign = ALIGN_RIGHT;
-      }
-    }
-    cJSON *contentNode = styleElement->child;
-    while (1) {
-      if (!contentNode) {
-        break;
-      }
-      if (strcmp("line", contentNode->string) == 0) {
-        double x1, x2, y1, y2;
-        double r = 0;
-        double g = 0;
-        double b = 0;
-        double a = 1;
-        double lineWidth = 1;
-        APPLY_STYLE_DOUBLE(contentNode, "x1", x1);
-        APPLY_STYLE_DOUBLE(contentNode, "x2", x2);
-        APPLY_STYLE_DOUBLE(contentNode, "y1", y1);
-        APPLY_STYLE_DOUBLE(contentNode, "y2", y2);
-        APPLY_STYLE_DOUBLE(contentNode, "width", lineWidth);
-        APPLY_STYLE_DOUBLE(contentNode, "r", r);
-        APPLY_STYLE_DOUBLE(contentNode, "g", g);
-        APPLY_STYLE_DOUBLE(contentNode, "b", b);
-        APPLY_STYLE_DOUBLE(contentNode, "a", a);
-
-        x1 += style->x;
-        x2 += style->x;
-        y1 += style->y;
-        y2 += style->y;
-
-        cairo_set_source_rgba(cr, r, g, b, a);
-        cairo_set_line_width(cr, lineWidth);
-        cairo_move_to(cr, x1, y1);
-        cairo_line_to(cr, x2, y2);
-        cairo_stroke(cr);
-      }
-      contentNode = contentNode->next;
-    }
-  }
-}
-
-//void handleIcons(cairo_t *cr, cJSON *stylesheet, struct style *style) {
-//
-//  /*
-//   * This section of code is run whenever the "icon" element is encountered
-//   */
-//  cJSON *icon = find(stylesheet, "icon");
-//  if (icon) {
-//
-//    /*
-//     * The "icon" element should have at least a URL and filename nested within
-//     * it.
-//     */
-//    cJSON *u = find(icon, "url");
-//    cJSON *n = find(icon, "name");
-//    if (u && n) {
-//
-//      /*
-//       * Save the context and apply transformations
-//       */
-//      cairo_save(cr);
-//      cairo_translate(cr, style->x, style->y);
-//      cairo_scale(cr, style->size, style->size);
-//
-//      /*
-//       * Try to open the image, download it from the internet if that doesn't
-//       * succeed
-//       */
-//      RsvgHandle *rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
-//      if (!rsvg) {
-//        fprintf(stderr, "File was not found locally, downloading.\n");
-//        CURL *handle = curl_easy_init();
-//        if (handle) {
-//          FILE *f = fopen(n->valuestring, "wb");
-//          curl_easy_setopt(handle, CURLOPT_URL, u->valuestring);
-//          curl_easy_setopt(handle, CURLOPT_WRITEDATA, f);
-//          curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_callback);
-//          curl_easy_perform(handle);
-//          curl_easy_cleanup(handle);
-//          fclose(f);
-//        } else {
-//          fprintf(stderr, "cURL failure.\n");
-//          exit(EXIT_FAILURE);
-//        }
-//        rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
-//      }
-//
-//      /*
-//       * Display the image
-//       */
-//      if (!rsvg_handle_render_cairo(rsvg, cr)) {
-//        fprintf(stderr, "Icon could not be rendered.\n");
-//        exit(EXIT_FAILURE);
-//      }
-//
-//      /*
-//       * Restore the graphics context
-//       */
-//      cairo_restore(cr);
-//    }
-//  }
-//}
-
-void collectConstants(cJSON *stylesheet) {
+void collectConstants(cJSON *stylesheet, lua_State *L) {
   cJSON *styleElement = find(stylesheet, "_constants");
   if (styleElement) {
     cJSON *node = NULL;
@@ -316,7 +133,8 @@ int main(int argc, char *argv[]) {
   /*
    * Initialize the Lua library
    */
-  L = luaL_newstate();
+
+  lua_State *L = luaL_newstate();
   luaL_openlibs(L);
 
   /*
@@ -411,9 +229,9 @@ int main(int argc, char *argv[]) {
   /*
    * Evaluate all constants for use throughout the stylesheet tree
    */
-  collectConstants(stylesheet);
+  collectConstants(stylesheet, L);
 
-  simultaneous_traversal(cr, content, stylesheet);
+  simultaneous_traversal(cr, content, stylesheet, L);
 
   /*
    * Technically, we don't need to use this function because we are only

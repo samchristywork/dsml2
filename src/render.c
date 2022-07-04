@@ -1,7 +1,9 @@
 #include <cjson/cJSON.h>
 #include <pango/pangocairo.h>
 
-#include "render.h"
+#include "style.h"
+#include "traverse.h"
+#include "version.h"
 
 /*
  * Various checksums and their `set` functions.

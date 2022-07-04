@@ -7,9 +7,4 @@
  */
 #define POINTS_PER_INCH 72
 
-/*
- * The Lua state object.
- */
-lua_State *L;
-
 #endif

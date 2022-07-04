@@ -2,6 +2,7 @@
 #include <librsvg-2.0/librsvg/rsvg.h>
 
 #include "render.h"
+#include "style.h"
 
 /*
  * Checks a node and all of its siblings for a particular key string.
@@ -29,10 +30,10 @@ cJSON *find(cJSON *tree, char *str) {
  * applies style information and draws elements along the way.
  */
 void _simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, int depth,
-                             struct style style) {
+                             struct style style, lua_State *L) {
 
   cJSON *styleElement = find(stylesheet, "_style");
-  applyStyles(cr, styleElement, &style);
+  applyStyles(cr, styleElement, &style, L);
 
   //handleIcons(cr, stylesheet, &style);
 
@@ -61,7 +62,7 @@ void _simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, int
     /*
      * Recur
      */
-    _simultaneous_traversal(cr, contentNode, styleNode, depth + 1, style);
+    _simultaneous_traversal(cr, contentNode, styleNode, depth + 1, style, L);
 
     cJSON *styleElement = find(stylesheet, "_style");
     if (styleElement) {
@@ -79,7 +80,7 @@ void _simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, int
   }
 }
 
-void simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet) {
+void simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, lua_State *L) {
   /*
    * Apply default styling rules.
    */
@@ -88,5 +89,5 @@ void simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet) {
   style.a = 1;
   style.lineHeight = 1.5;
   strcpy(style.face, "Sans");
-  _simultaneous_traversal(cr, content, stylesheet, 0, style);
+  _simultaneous_traversal(cr, content, stylesheet, 0, style, L);
 }

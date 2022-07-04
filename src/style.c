@@ -1,4 +1,57 @@
-void applyStyles(cairo_t *cr, cJSON *styleElement, struct style *style) {
+#include <cairo-pdf.h>
+#include <cjson/cJSON.h>
+#include <lauxlib.h>
+#include <lualib.h>
+#include <stdlib.h>
+#include <string.h>
+#include <zlib.h>
+
+#include "dsml2.h"
+#include "render.h"
+#include "style.h"
+#include "traverse.h"
+#include "version.h"
+
+/*
+ * Macros for applying style information.
+ */
+#define ADD_STYLE_DOUBLE(e, a, b) \
+  {                               \
+    cJSON *s = find(e, a);        \
+    if (s) {                      \
+      luaEval(s, L);              \
+      b += s->valuedouble;        \
+    }                             \
+  }
+
+#define APPLY_STYLE_DOUBLE(e, a, b) \
+  {                                 \
+    cJSON *s = find(e, a);          \
+    if (s) {                        \
+      luaEval(s, L);                \
+      b = s->valuedouble;           \
+    }                               \
+  }
+
+/*
+ * Evaluate an arithmetic expression in the `valuestring` field of the cJSON
+ * struct, and place the floating point contents into the `valuedouble` field.
+ * Cause program exit on invalid input.
+ */
+void luaEval(cJSON *c, lua_State *L) {
+  if (cJSON_IsString(c)) {
+    lua_getglobal(L, "eval");
+    lua_pushstring(L, c->valuestring);
+    int error = lua_pcall(L, 1, 1, 0);
+    c->valuedouble = lua_tonumber(L, -1);
+    if (error) {
+      fprintf(stderr, "%s\n", lua_tostring(L, -1));
+      exit(EXIT_FAILURE);
+    }
+  }
+}
+
+void applyStyles(cairo_t *cr, cJSON *styleElement, struct style *style, lua_State *L) {
   if (styleElement) {
     ADD_STYLE_DOUBLE(styleElement, "x", style->x)
     ADD_STYLE_DOUBLE(styleElement, "y", style->y)
