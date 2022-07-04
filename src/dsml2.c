@@ -1,6 +1,6 @@
 #include <cairo-pdf.h>
 #include <cjson/cJSON.h>
-#include <curl/curl.h>
+//#include <curl/curl.h>
 #include <lauxlib.h>
 #include <librsvg-2.0/librsvg/rsvg.h>
 #include <lualib.h>
@@ -8,6 +8,7 @@
 
 #include "dsml2.h"
 #include "render.h"
+#include "traverse.h"
 
 /*
  * Macros for applying style information.
@@ -97,27 +98,6 @@ cJSON *readJSONFile(FILE *f) {
     exit(EXIT_FAILURE);
   }
   return cjson;
-}
-
-/*
- * Checks a node and all of its siblings for a particular key string.
- */
-cJSON *find(cJSON *tree, char *str) {
-  cJSON *node = NULL;
-
-  if (tree) {
-    node = tree->child;
-    while (1) {
-      if (!node) {
-        break;
-      }
-      if (strcmp(str, node->string) == 0) {
-        break;
-      }
-      node = node->next;
-    }
-  }
-  return node;
 }
 
 /*
@@ -215,134 +195,67 @@ void applyStyles(cairo_t *cr, cJSON *styleElement, struct style *style) {
   }
 }
 
-void handleIcons(cairo_t *cr, cJSON *stylesheet, struct style *style) {
-
-  /*
-   * This section of code is run whenever the "icon" element is encountered
-   */
-  cJSON *icon = find(stylesheet, "icon");
-  if (icon) {
-
-    /*
-     * The "icon" element should have at least a URL and filename nested within
-     * it.
-     */
-    cJSON *u = find(icon, "url");
-    cJSON *n = find(icon, "name");
-    if (u && n) {
-
-      /*
-       * Save the context and apply transformations
-       */
-      cairo_save(cr);
-      cairo_translate(cr, style->x, style->y);
-      cairo_scale(cr, style->size, style->size);
-
-      /*
-       * Try to open the image, download it from the internet if that doesn't
-       * succeed
-       */
-      RsvgHandle *rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
-      if (!rsvg) {
-        fprintf(stderr, "File was not found locally, downloading.\n");
-        CURL *handle = curl_easy_init();
-        if (handle) {
-          FILE *f = fopen(n->valuestring, "wb");
-          curl_easy_setopt(handle, CURLOPT_URL, u->valuestring);
-          curl_easy_setopt(handle, CURLOPT_WRITEDATA, f);
-          curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_callback);
-          curl_easy_perform(handle);
-          curl_easy_cleanup(handle);
-          fclose(f);
-        } else {
-          fprintf(stderr, "cURL failure.\n");
-          exit(EXIT_FAILURE);
-        }
-        rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
-      }
-
-      /*
-       * Display the image
-       */
-      if (!rsvg_handle_render_cairo(rsvg, cr)) {
-        fprintf(stderr, "Icon could not be rendered.\n");
-        exit(EXIT_FAILURE);
-      }
-
-      /*
-       * Restore the graphics context
-       */
-      cairo_restore(cr);
-    }
-  }
-}
-
-/*
- * This function traverses the content and stylesheet trees simultaneously and
- * applies style information and draws elements along the way.
- */
-void _simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, int depth,
-                             struct style style) {
-
-  cJSON *styleElement = find(stylesheet, "_style");
-  applyStyles(cr, styleElement, &style);
-
-  handleIcons(cr, stylesheet, &style);
-
-  renderText(cr, content, &style);
-
-  cJSON *contentNode = content->child;
-
-  /*
-   * Traverse the children
-   */
-  while (1) {
-    if (!contentNode) {
-      break;
-    }
-    fprintf(stdout, "Processing node: ");
-    for (int i = 0; i < depth; i++) {
-      fprintf(stdout, "  ");
-    }
-    fprintf(stdout, "%s\n", contentNode->string);
-
-    /*
-     * Find the correct node in the stylesheet to follow along
-     */
-    cJSON *styleNode = find(stylesheet, contentNode->string);
-
-    /*
-     * Recur
-     */
-    _simultaneous_traversal(cr, contentNode, styleNode, depth + 1, style);
-
-    cJSON *styleElement = find(stylesheet, "_style");
-    if (styleElement) {
-      cJSON *x = find(styleElement, "xOffset");
-      if (x) {
-        style.x += x->valuedouble;
-      }
-      cJSON *y = find(styleElement, "yOffset");
-      if (y) {
-        style.y += y->valuedouble;
-      }
-    }
-
-    contentNode = contentNode->next;
-  }
-}
-
-void simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet) {
-  /*
-   * Apply default styling rules.
-   */
-  struct style style = {0};
-  style.size = 12;
-  style.a = 1;
-  style.lineHeight = 1.5;
-  strcpy(style.face, "Sans");
-  _simultaneous_traversal(cr, content, stylesheet, 0, style);
-}
+//void handleIcons(cairo_t *cr, cJSON *stylesheet, struct style *style) {
+//
+//  /*
+//   * This section of code is run whenever the "icon" element is encountered
+//   */
+//  cJSON *icon = find(stylesheet, "icon");
+//  if (icon) {
+//
+//    /*
+//     * The "icon" element should have at least a URL and filename nested within
+//     * it.
+//     */
+//    cJSON *u = find(icon, "url");
+//    cJSON *n = find(icon, "name");
+//    if (u && n) {
+//
+//      /*
+//       * Save the context and apply transformations
+//       */
+//      cairo_save(cr);
+//      cairo_translate(cr, style->x, style->y);
+//      cairo_scale(cr, style->size, style->size);
+//
+//      /*
+//       * Try to open the image, download it from the internet if that doesn't
+//       * succeed
+//       */
+//      RsvgHandle *rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
+//      if (!rsvg) {
+//        fprintf(stderr, "File was not found locally, downloading.\n");
+//        CURL *handle = curl_easy_init();
+//        if (handle) {
+//          FILE *f = fopen(n->valuestring, "wb");
+//          curl_easy_setopt(handle, CURLOPT_URL, u->valuestring);
+//          curl_easy_setopt(handle, CURLOPT_WRITEDATA, f);
+//          curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_callback);
+//          curl_easy_perform(handle);
+//          curl_easy_cleanup(handle);
+//          fclose(f);
+//        } else {
+//          fprintf(stderr, "cURL failure.\n");
+//          exit(EXIT_FAILURE);
+//        }
+//        rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
+//      }
+//
+//      /*
+//       * Display the image
+//       */
+//      if (!rsvg_handle_render_cairo(rsvg, cr)) {
+//        fprintf(stderr, "Icon could not be rendered.\n");
+//        exit(EXIT_FAILURE);
+//      }
+//
+//      /*
+//       * Restore the graphics context
+//       */
+//      cairo_restore(cr);
+//    }
+//  }
+//}
 
 void collectConstants(cJSON *stylesheet) {
   cJSON *styleElement = find(stylesheet, "_constants");

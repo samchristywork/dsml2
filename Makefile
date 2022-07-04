@@ -5,13 +5,17 @@ LIBS := $(shell pkg-config --libs cairo librsvg-2.0 lua pango pangocairo) -lcjso
 
 all: build/dsml2
 
+build/traverse.o: src/traverse.*
+	mkdir -p build/
+	${CC} src/traverse.c -c ${CFLAGS} -o $@ ${LIBS}
+
 build/render.o: src/render.* src/style.h src/version.h
 	mkdir -p build/
 	${CC} src/render.c -c ${CFLAGS} -o $@ ${LIBS}
 
-build/dsml2: src/dsml2.* src/render.* build/render.o
+build/dsml2: src/dsml2.* src/render.* build/render.o build/traverse.o
 	mkdir -p build/
-	${CC} src/dsml2.c build/render.o ${CFLAGS} -o $@ ${LIBS}
+	${CC} src/dsml2.c build/*.o ${CFLAGS} -o $@ ${LIBS}
 
 sample:
 	make

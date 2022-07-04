@@ -31,4 +31,6 @@ struct style {
   char uri[256];
 };
 
+void applyStyles(cairo_t *cr, cJSON *styleElement, struct style *style);
+
 #endif
