@@ -14,7 +14,7 @@ enum align {
  * Struct that holds information about the various styles that need to be
  * applied and propagated to children.
  */
-struct style {
+typedef struct style {
   float x;
   float y;
   float xOffset;
