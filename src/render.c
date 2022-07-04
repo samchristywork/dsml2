@@ -1,4 +1,6 @@
 #include <cjson/cJSON.h>
+#include <curl/curl.h>
+#include <librsvg-2.0/librsvg/rsvg.h>
 #include <pango/pangocairo.h>
 
 #include "style.h"
@@ -19,7 +21,76 @@ void setStylesheetChecksum(unsigned int checksum) {
   stylesheetChecksum = checksum;
 }
 
-void renderText(cairo_t *cr, cJSON *content, struct style *style) {
+/*
+ * The callback that cURL uses to write the icon file to the filesystem.
+ */
+size_t writeCallback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+  return fwrite(ptr, size, nmemb, stream);
+}
+
+void handleIcons(cairo_t *cr, cJSON *stylesheet, style *style) {
+
+  /*
+   * This section of code is run whenever the "icon" element is encountered
+   */
+  cJSON *icon = find(stylesheet, "icon");
+  if (icon) {
+
+    /*
+     * The "icon" element should have at least a URL and filename nested within
+     * it.
+     */
+    cJSON *u = find(icon, "url");
+    cJSON *n = find(icon, "name");
+    if (u && n) {
+
+      /*
+       * Save the context and apply transformations
+       */
+      cairo_save(cr);
+      cairo_translate(cr, style->x, style->y);
+      cairo_scale(cr, style->size, style->size);
+
+      /*
+       * Try to open the image, download it from the internet if that doesn't
+       * succeed
+       */
+      RsvgHandle *rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
+      if (!rsvg) {
+        fprintf(stderr, "File was not found locally, downloading.\n");
+        CURL *handle = curl_easy_init();
+        if (handle) {
+          FILE *f = fopen(n->valuestring, "wb");
+          curl_easy_setopt(handle, CURLOPT_URL, u->valuestring);
+          curl_easy_setopt(handle, CURLOPT_WRITEDATA, f);
+          curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, writeCallback);
+          curl_easy_perform(handle);
+          curl_easy_cleanup(handle);
+          fclose(f);
+        } else {
+          fprintf(stderr, "cURL failure.\n");
+          exit(EXIT_FAILURE);
+        }
+        rsvg = rsvg_handle_new_from_file(n->valuestring, 0);
+      }
+
+      /*
+       * Display the image
+       */
+      if (!rsvg_handle_render_cairo(rsvg, cr)) {
+        fprintf(stderr, "Icon could not be rendered.\n");
+        exit(EXIT_FAILURE);
+      }
+
+      /*
+       * Restore the graphics context
+       */
+      cairo_restore(cr);
+    }
+  }
+}
+
+void renderText(cairo_t *cr, cJSON *content, style *style) {
   if (cJSON_IsString(content) && content->valuestring) {
 
     /*

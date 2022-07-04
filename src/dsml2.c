@@ -1,9 +1,9 @@
 #include <cairo-pdf.h>
 #include <cjson/cJSON.h>
-//#include <curl/curl.h>
 #include <lauxlib.h>
-#include <librsvg-2.0/librsvg/rsvg.h>
 #include <lualib.h>
+#include <stdlib.h>
+#include <string.h>
 #include <zlib.h>
 
 #include "dsml2.h"
