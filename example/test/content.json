@@ -1,0 +1,29 @@
+{
+  "rev": "REV",
+  "date": "CURRENT_DATE",
+  "noStyle": "Test Document",
+  "title": "Test Document",
+  "testBoxes": {
+    "leftAligned": "A red flair silhouetted the jagged edge of a wing.",
+    "centerAligned": "A shining crescent far beneath the flying vessel.",
+    "rightAligned": "All their equipment and instruments are alive.",
+    "bold": "<b>Almost before we knew it, we had left the ground.</b>",
+    "underline": "<u>I watched the storm, so beautiful yet terrific.</u>",
+    "italic": "<i>It was going to be a lonely trip back.</i>",
+    "color": "Mist enveloped the ship three hours out from port.",
+    "hyperlink": "<span foreground=\"blue\"><u>My two natures had memory in common.</u></span>",
+    "face": "She stared through the window at the stars.",
+    "mixedFormatting": "<span foreground=\"silver\">Silver mist</span> <s>suffused</s> the <span foreground=\"green\">deck of the ship.</span>",
+    "emoji": "🌱 The face of the moon was in shadow.",
+    "kanji": "漢字 The recorded voice scratched in the speaker.",
+    "line": "The sky was cloudless and of a deep dark blue.",
+    "spacing": "The spectacle before us was indeed sublime.",
+    "icons": "",
+    "iconsText": "    Then came the night of the first falling star.",
+    "foo1": "Then came the night of the first falling star.",
+    "foo2": "Waves flung themselves at the blue evening.",
+    "foo3": "In old times when wishing still helped one, there lived a king whose daughters were all beautiful, but the youngest was so beautiful that the sun itself, which has seen so much, was astonished whenever it shone in her face. Close by the King’s castle lay a great dark forest, and under an old lime-tree in the forest was a well, and when the day was very warm, the King’s child went out into the forest and sat down by the side of the cool fountain, and when she was dull she took a golden ball, and threw it up on high and caught it, and this ball was her favourite plaything."
+  },
+  "pageBreak": "",
+  "lipsum": "INCLUDE:example/test/lipsum.txt"
+}

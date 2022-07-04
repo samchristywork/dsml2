@@ -1,0 +1,37 @@
+{
+  "_constants": {
+    "oneinch": 72,
+    "pagewidth": "oneinch * 8.5",
+    "pageheight": "oneinch * 11",
+    "margin": "oneinch*.75",
+    "textBoxGap": 24,
+    "textBoxHeight": 48,
+    "textBoxWidth": "(pagewidth-margin*2-textBoxGap*2)/3"
+  },
+  "rev": { "_style": { "y": 12 } },
+  "date": { "_style": { "y": 24 } },
+  "title": { "_style": { "x": "pagewidth/2", "y": "margin", "size": 20, "textAlign": "center", "width": "pagewidth" } },
+  "testBoxes": {
+    "_style": { "x": "margin", "y": "oneinch+margin" },
+    "leftAligned": { "_style": { "x": "(textBoxWidth+textBoxGap)*0", "y": 12, "textAlign": "left", "width": "textBoxWidth" } },
+    "centerAligned": { "_style": { "x": "textBoxWidth/2+(textBoxWidth+textBoxGap)*1", "y": 12, "textAlign": "center", "width": "textBoxWidth" } },
+    "rightAligned": { "_style": { "x": "textBoxWidth+(textBoxWidth+textBoxGap)*2", "y": 12, "textAlign": "right", "width": "textBoxWidth" } },
+    "bold": { "_style": { "x": "(textBoxWidth+textBoxGap)*0", "y": "12+textBoxHeight*1", "width": "textBoxWidth" } },
+    "underline": { "_style": { "x": "(textBoxWidth+textBoxGap)*1", "y": "12+textBoxHeight*1", "width": "textBoxWidth" } },
+    "italic": { "_style": { "x": "(textBoxWidth+textBoxGap)*2", "y": "12+textBoxHeight*1", "width": "textBoxWidth" } },
+    "color": { "_style": { "x": "(textBoxWidth+textBoxGap)*0", "y": "12+textBoxHeight*2", "width": "textBoxWidth", "r": 1 } },
+    "hyperlink": { "_style": { "x": "(textBoxWidth+textBoxGap)*1", "y": "12+textBoxHeight*2", "width": "textBoxWidth", "URI": "uri='https://example.com/'"} },
+    "face": { "_style": { "x": "(textBoxWidth+textBoxGap)*2", "y": "12+textBoxHeight*2", "width": "textBoxWidth", "face": "unifont"} },
+    "mixedFormatting": { "_style": { "x": "(textBoxWidth+textBoxGap)*0", "y": "12+textBoxHeight*3", "width": "textBoxWidth" } },
+    "emoji": { "_style": { "x": "(textBoxWidth+textBoxGap)*1", "y": "12+textBoxHeight*3", "width": "textBoxWidth" } },
+    "kanji": { "_style": { "x": "(textBoxWidth+textBoxGap)*2", "y": "12+textBoxHeight*3", "width": "textBoxWidth" } },
+    "line": { "_style": { "x": "(textBoxWidth+textBoxGap)*0", "y": "12+textBoxHeight*4", "width": "textBoxWidth", "line": { "x1": 0, "x2":"textBoxWidth", "y1":0, "y2": 24, "b": 1 } } },
+    "spacing": { "_style": { "x": "(textBoxWidth+textBoxGap)*1", "y": "12+textBoxHeight*4", "width": "textBoxWidth", "spacing": 2 } },
+    "iconsText": { "_style": { "x": "(textBoxWidth+textBoxGap)*2", "y": "12+textBoxHeight*4", "width": "textBoxWidth" } },
+    "icons": { "_style": { "x": "(textBoxWidth+textBoxGap)*2", "y": "12+textBoxHeight*4", "size": ".3" }, "icon": { "url": "https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/favorite/default/48px.svg", "name": "icons/favorite.svg" } },
+    "foo1": { "_style": { "x": "(textBoxWidth+textBoxGap)*0", "y": "12+textBoxHeight*5", "width": "textBoxWidth" } },
+    "foo2": { "_style": { "x": "(textBoxWidth+textBoxGap)*1", "y": "12+textBoxHeight*5", "width": "textBoxWidth" } },
+    "foo3": { "_style": { "x": "(textBoxWidth+textBoxGap)*2", "y": "12+textBoxHeight*5", "width": "textBoxWidth" } }
+  },
+  "lipsum": { "_style": { "x": "margin", "y": "margin+oneinch", "spacing": "1.5", "width": "pagewidth-margin*2" } }
+}
