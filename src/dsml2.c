@@ -4,50 +4,10 @@
 #include <lauxlib.h>
 #include <librsvg-2.0/librsvg/rsvg.h>
 #include <lualib.h>
-#include <pango/pangocairo.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 #include <zlib.h>
 
-#define DSML_VERSION "2.0.0"
-
-/*
- * Points are the unit of measurement used by Cairo. 1 point is equal to 1/72
- * inches.
- */
-#define POINTS_PER_INCH 72
-
-/*
- * Struct that holds information about the various styles that need to be
- * applied and propagated to children.
- */
-struct style {
-  float x;
-  float y;
-  float xOffset;
-  float yOffset;
-  float size;
-  float textWidth;
-  float lineHeight;
-  float spacing;
-  float r;
-  float g;
-  float b;
-  float a;
-  float width;
-  int stripNewlines;
-  int textAlign;
-  char face[256];
-  char uri[256];
-};
-
-enum align {
-  ALIGN_LEFT = 0,
-  ALIGN_CENTER = 1,
-  ALIGN_RIGHT = 2,
-};
+#include "dsml2.h"
+#include "render.h"
 
 /*
  * Macros for applying style information.
@@ -69,30 +29,6 @@ enum align {
       b = s->valuedouble;           \
     }                               \
   }
-
-/*
- * The Cairo context object.
- */
-cairo_t *cr;
-
-/*
- * The Lua state object.
- */
-lua_State *L;
-
-unsigned int contentChecksum;
-unsigned int stylesheetChecksum;
-
-void usage(char *argv[]) {
-  fprintf(stderr,
-          "Usage: %s [-c content] [-s stylesheet] [-o output file]\n"
-          " -c\tThe file that contains the document content. Default \"content.json\".\n"
-          " -s\tThe file that contains the document style. Default \"stylesheet.json\".\n"
-          " -s\tThe output file. Defaults to stdout.\n"
-          "",
-          argv[0]);
-  exit(EXIT_FAILURE);
-}
 
 /*
  * The callback that cURL uses to write the icon file to the filesystem.
@@ -202,7 +138,7 @@ void luaEval(cJSON *c) {
   }
 }
 
-void applyStyles(cJSON *styleElement, struct style *style) {
+void applyStyles(cairo_t *cr, cJSON *styleElement, struct style *style) {
   if (styleElement) {
     ADD_STYLE_DOUBLE(styleElement, "x", style->x)
     ADD_STYLE_DOUBLE(styleElement, "y", style->y)
@@ -279,7 +215,7 @@ void applyStyles(cJSON *styleElement, struct style *style) {
   }
 }
 
-void handleIcons(cJSON *stylesheet, struct style *style) {
+void handleIcons(cairo_t *cr, cJSON *stylesheet, struct style *style) {
 
   /*
    * This section of code is run whenever the "icon" element is encountered
@@ -341,141 +277,19 @@ void handleIcons(cJSON *stylesheet, struct style *style) {
   }
 }
 
-void renderText(cJSON *content, struct style *style) {
-  if (cJSON_IsString(content) && content->valuestring) {
-
-    /*
-     * Configure the style of text that is to be displayed
-     */
-    cairo_set_source_rgba(cr, style->r, style->g, style->b, style->a);
-    PangoFontDescription *font_description = pango_font_description_new();
-    pango_font_description_set_family(font_description, style->face);
-    pango_font_description_set_absolute_size(font_description,
-                                             style->size * PANGO_SCALE);
-
-    PangoLayout *layout = pango_cairo_create_layout(cr);
-    pango_layout_set_font_description(layout, font_description);
-
-    pango_layout_set_justify(layout, TRUE);
-
-    pango_layout_set_line_spacing(layout, style->spacing);
-
-    if (style->width != 0) {
-      pango_layout_set_width(layout, PANGO_SCALE * style->width);
-    }
-    if (style->textAlign == ALIGN_CENTER) {
-      pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
-      if (style->width == 0) {
-        fprintf(stderr, "Alignment set to 'center', but missing width.\n");
-      }
-      style->x -= style->width / 2.;
-    } else if (style->textAlign == ALIGN_RIGHT) {
-      pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
-      if (style->width == 0) {
-        fprintf(stderr, "Alignment set to 'right', but missing width.\n");
-      }
-      style->x -= style->width;
-    }
-
-    /*
-     * Write out the current date and time.
-     */
-    if (strcmp(content->valuestring, "CURRENT_DATE") == 0) {
-      time_t now;
-      time(&now);
-      pango_layout_set_markup(layout, ctime(&now), -1);
-
-      /*
-     * Transclusion directive. The token "INCLUDE:" will indicate that the text
-     * after the colon is a filename, the contents of which will be treated as
-     * the text of the current element.
-     */
-    } else if (strncmp(content->valuestring, "INCLUDE:", strlen("INCLUDE:")) == 0) {
-      for (int i = 0; i < strlen(content->valuestring); i++) {
-        if (content->valuestring[i] == ':') {
-          FILE *f = fopen(content->valuestring + i + 1, "rb");
-          if (!f) {
-            perror("fopen");
-            exit(EXIT_FAILURE);
-          }
-
-          fseek(f, 0, SEEK_END);
-          int size = ftell(f);
-          rewind(f);
-
-          /*
-           * Read the file data into memory
-           */
-          char buffer[size + 1];
-          buffer[size] = 0;
-          int ret = fread(buffer, 1, size, f);
-          if (ret != size) {
-            fprintf(stderr, "Could not read the expected number of bytes.\n");
-            exit(EXIT_FAILURE);
-          }
-          rewind(f);
-
-          if (style->stripNewlines) {
-            for (int i = 0; i < size; i++) {
-              if (buffer[i] == '\n') {
-                buffer[i] = ' ';
-              }
-            }
-          }
-
-          pango_layout_set_markup(layout, buffer, -1);
-        }
-      }
-
-      /*
-     * Replace the text of the current element with the DSML version and
-     * checksums required to build the document.
-     */
-    } else if (strcmp(content->valuestring, "REV") == 0) {
-      char buf[256];
-      snprintf(buf, 255, "%s:%x:%x", DSML_VERSION, contentChecksum, stylesheetChecksum);
-      pango_layout_set_markup(layout, buf, -1);
-
-      /*
-     * Reproduce the text verbatim.
-     */
-    } else {
-      pango_layout_set_markup(layout, content->valuestring, -1);
-    }
-
-    /*
-     * Render the text
-     */
-    if (style->uri) {
-      cairo_tag_begin(cr, CAIRO_TAG_LINK, style->uri);
-    }
-    cairo_move_to(cr, style->x, style->y);
-    pango_cairo_show_layout(cr, layout);
-    if (style->uri) {
-      cairo_tag_end(cr, CAIRO_TAG_LINK);
-    }
-
-    /*
-     * Cleanup
-     */
-    g_object_unref(layout);
-    pango_font_description_free(font_description);
-  }
-}
-
 /*
  * This function traverses the content and stylesheet trees simultaneously and
  * applies style information and draws elements along the way.
  */
-void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
+void _simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, int depth,
                              struct style style) {
 
   cJSON *styleElement = find(stylesheet, "_style");
-  applyStyles(styleElement, &style);
+  applyStyles(cr, styleElement, &style);
 
-  handleIcons(stylesheet, &style);
+  handleIcons(cr, stylesheet, &style);
 
-  renderText(content, &style);
+  renderText(cr, content, &style);
 
   cJSON *contentNode = content->child;
 
@@ -500,7 +314,7 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
     /*
      * Recur
      */
-    _simultaneous_traversal(contentNode, styleNode, depth + 1, style);
+    _simultaneous_traversal(cr, contentNode, styleNode, depth + 1, style);
 
     cJSON *styleElement = find(stylesheet, "_style");
     if (styleElement) {
@@ -518,7 +332,7 @@ void _simultaneous_traversal(cJSON *content, cJSON *stylesheet, int depth,
   }
 }
 
-void simultaneous_traversal(cJSON *content, cJSON *stylesheet) {
+void simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet) {
   /*
    * Apply default styling rules.
    */
@@ -527,7 +341,7 @@ void simultaneous_traversal(cJSON *content, cJSON *stylesheet) {
   style.a = 1;
   style.lineHeight = 1.5;
   strcpy(style.face, "Sans");
-  _simultaneous_traversal(content, stylesheet, 0, style);
+  _simultaneous_traversal(cr, content, stylesheet, 0, style);
 }
 
 void collectConstants(cJSON *stylesheet) {
@@ -564,7 +378,23 @@ void collectConstants(cJSON *stylesheet) {
   }
 }
 
+void usage(char *argv[]) {
+  fprintf(stderr,
+          "Usage: %s [-c content] [-s stylesheet] [-o output file]\n"
+          " -c\tThe file that contains the document content. Default \"content.json\".\n"
+          " -s\tThe file that contains the document style. Default \"stylesheet.json\".\n"
+          " -s\tThe output file. Defaults to stdout.\n"
+          "",
+          argv[0]);
+  exit(EXIT_FAILURE);
+}
+
 int main(int argc, char *argv[]) {
+
+  /*
+   * The cairo context object.
+   */
+  cairo_t *cr;
 
   char outfileName[256] = "/dev/stdout";
   FILE *contentFile = NULL;
@@ -642,11 +472,13 @@ int main(int argc, char *argv[]) {
    * Generate checksums.
    */
 
-  contentChecksum = checksumFile(contentFile);
-  stylesheetChecksum = checksumFile(stylesheetFile);
+  unsigned int contentChecksum = checksumFile(contentFile);
+  unsigned int stylesheetChecksum = checksumFile(stylesheetFile);
   fprintf(stdout, "DSML version: %s\n", DSML_VERSION);
   fprintf(stdout, "Content file checksum: %x\n", contentChecksum);
   fprintf(stdout, "Style file checksum: %x\n", stylesheetChecksum);
+  setContentChecksum(contentChecksum);
+  setStylesheetChecksum(stylesheetChecksum);
 
   /*
    * Initialize the Cairo surface
@@ -668,7 +500,7 @@ int main(int argc, char *argv[]) {
    */
   collectConstants(stylesheet);
 
-  simultaneous_traversal(content, stylesheet);
+  simultaneous_traversal(cr, content, stylesheet);
 
   /*
    * Technically, we don't need to use this function because we are only
