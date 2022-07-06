@@ -17,7 +17,7 @@ float pageWidth = 8.5 * POINTS_PER_INCH;
 float pageHeight = 11 * POINTS_PER_INCH;
 
 /*
- * Generate a checksum value from a file stream.
+ * Retrieve a floating point value by evaluating a string
  */
 float luaGetVal(lua_State *L, char *s) {
   lua_getglobal(L, "eval");
@@ -65,6 +65,10 @@ void applyOptions(cJSON *stylesheet, lua_State *L) {
   }
 }
 
+/*
+ * Evaluate all of the constants in the "_constants" section for use throughout
+ * the document
+ */
 void collectConstants(cJSON *stylesheet, lua_State *L) {
   cJSON *styleElement = find(stylesheet, "_constants");
   if (styleElement) {
@@ -77,7 +81,7 @@ void collectConstants(cJSON *stylesheet, lua_State *L) {
       }
 
       /*
-       * Evaluate a string that sets up some global variables.
+       * Evaluate a string that sets up some global variables
        */
       char buf[256];
       if (cJSON_IsString(node)) {
@@ -99,6 +103,9 @@ void collectConstants(cJSON *stylesheet, lua_State *L) {
   }
 }
 
+/*
+ * Print out a brief usage statement and exit
+ */
 void usage(char *argv[]) {
   fprintf(stderr,
           "Usage: %s [-c content] [-s stylesheet] [-o output file]\n"
@@ -113,7 +120,7 @@ void usage(char *argv[]) {
 int main(int argc, char *argv[]) {
 
   /*
-   * The cairo context object.
+   * The cairo context object
    */
   cairo_t *cr;
 
@@ -139,7 +146,7 @@ int main(int argc, char *argv[]) {
   }
 
   /*
-   * Handle program arguments.
+   * Handle program arguments
    */
   int opt;
   char *optstring = "c:s:o:h";
@@ -172,7 +179,7 @@ int main(int argc, char *argv[]) {
   }
 
   /*
-   * Failover to default locations if they exist.
+   * Failover to default locations if they exist
    */
   if (!contentFile) {
     contentFile = fopen("content.json", "rb");
@@ -191,7 +198,7 @@ int main(int argc, char *argv[]) {
   }
 
   /*
-   * Generate checksums.
+   * Generate checksums
    */
 
   unsigned int contentChecksum = checksumFile(contentFile);
