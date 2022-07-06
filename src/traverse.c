@@ -3,6 +3,7 @@
 
 #include "render.h"
 #include "style.h"
+#include "traverse.h"
 
 /*
  * Checks a node and all of its siblings for a particular key string.
@@ -30,7 +31,7 @@ cJSON *find(cJSON *tree, char *str) {
  * applies style information and draws elements along the way.
  */
 void _simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, int depth,
-                             struct style style, lua_State *L) {
+                             struct style style, lua_State *L, int logMode) {
 
   cJSON *styleElement = find(stylesheet, "_style");
   applyStyles(cr, styleElement, &style, L);
@@ -48,11 +49,13 @@ void _simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, int
     if (!contentNode) {
       break;
     }
-    fprintf(stdout, "Processing node: ");
-    for (int i = 0; i < depth; i++) {
-      fprintf(stdout, "  ");
+    if (logMode == LOG_VERBOSE) {
+      fprintf(stdout, "Processing node: ");
+      for (int i = 0; i < depth; i++) {
+        fprintf(stdout, "  ");
+      }
+      fprintf(stdout, "%s\n", contentNode->string);
     }
-    fprintf(stdout, "%s\n", contentNode->string);
 
     /*
      * Find the correct node in the stylesheet to follow along
@@ -62,7 +65,7 @@ void _simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, int
     /*
      * Recur
      */
-    _simultaneous_traversal(cr, contentNode, styleNode, depth + 1, style, L);
+    _simultaneous_traversal(cr, contentNode, styleNode, depth + 1, style, L, logMode);
 
     cJSON *styleElement = find(stylesheet, "_style");
     if (styleElement) {
@@ -80,7 +83,7 @@ void _simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, int
   }
 }
 
-void simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, lua_State *L) {
+void simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, lua_State *L, int logMode) {
   /*
    * Apply default styling rules.
    */
@@ -89,5 +92,5 @@ void simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, lua_
   style.a = 1;
   style.lineHeight = 1.5;
   strcpy(style.face, "Sans");
-  _simultaneous_traversal(cr, content, stylesheet, 0, style, L);
+  _simultaneous_traversal(cr, content, stylesheet, 0, style, L, logMode);
 }

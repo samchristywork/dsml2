@@ -111,7 +111,8 @@ void usage(char *argv[]) {
           "Usage: %s [-c content] [-s stylesheet] [-o output file]\n"
           " -c\tThe file that contains the document content. Default \"content.json\".\n"
           " -s\tThe file that contains the document style. Default \"stylesheet.json\".\n"
-          " -s\tThe output file. Defaults to stdout.\n"
+          " -o\tThe output file. Defaults to stdout.\n"
+          " -v\tVerbose mode.\n"
           "",
           argv[0]);
   exit(EXIT_FAILURE);
@@ -127,6 +128,7 @@ int main(int argc, char *argv[]) {
   char outfileName[256] = "/dev/stdout";
   FILE *contentFile = NULL;
   FILE *stylesheetFile = NULL;
+  int logMode = LOG_NONE;
 
   /*
    * Initialize the Lua library
@@ -149,7 +151,7 @@ int main(int argc, char *argv[]) {
    * Handle program arguments
    */
   int opt;
-  char *optstring = "c:s:o:h";
+  char *optstring = "c:s:o:hv";
   while ((opt = getopt(argc, argv, optstring)) != -1) {
     if (opt == 'h') {
       usage(argv);
@@ -170,6 +172,9 @@ int main(int argc, char *argv[]) {
         perror("fopen");
         usage(argv);
       }
+    }
+    if (opt == 'v') {
+      logMode = LOG_VERBOSE;
     }
   }
 
@@ -203,9 +208,11 @@ int main(int argc, char *argv[]) {
 
   unsigned int contentChecksum = checksumFile(contentFile);
   unsigned int stylesheetChecksum = checksumFile(stylesheetFile);
-  fprintf(stdout, "DSML version: %s\n", DSML_VERSION);
-  fprintf(stdout, "Content file checksum: %x\n", contentChecksum);
-  fprintf(stdout, "Style file checksum: %x\n", stylesheetChecksum);
+  if (logMode == LOG_VERBOSE) {
+    fprintf(stdout, "DSML version: %s\n", DSML_VERSION);
+    fprintf(stdout, "Content file checksum: %x\n", contentChecksum);
+    fprintf(stdout, "Style file checksum: %x\n", stylesheetChecksum);
+  }
   setContentChecksum(contentChecksum);
   setStylesheetChecksum(stylesheetChecksum);
 
@@ -228,8 +235,10 @@ int main(int argc, char *argv[]) {
   /*
    * Initialize the Cairo surface
    */
-  printf("%f\n", pageWidth);
-  printf("%f\n", pageHeight);
+  if (logMode == LOG_VERBOSE) {
+    fprintf(stdout, "%f\n", pageWidth);
+    fprintf(stdout, "%f\n", pageHeight);
+  }
   cairo_surface_t *surface = cairo_pdf_surface_create(
       outfileName, pageWidth, pageHeight);
 
@@ -239,7 +248,7 @@ int main(int argc, char *argv[]) {
   }
   cr = cairo_create(surface);
 
-  simultaneous_traversal(cr, content, stylesheet, L);
+  simultaneous_traversal(cr, content, stylesheet, L, logMode);
 
   /*
    * Technically, we don't need to use this function because we are only
