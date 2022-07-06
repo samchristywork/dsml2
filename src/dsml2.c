@@ -13,66 +13,56 @@
 #include "traverse.h"
 #include "version.h"
 
+float pageWidth = 8.5 * POINTS_PER_INCH;
+float pageHeight = 11 * POINTS_PER_INCH;
+
 /*
  * Generate a checksum value from a file stream.
  */
-unsigned int checksumFile(FILE *f) {
-  fseek(f, 0, SEEK_END);
-  int size = ftell(f);
-  rewind(f);
-
-  /*
-   * Read the file data into memory
-   */
-  unsigned char buffer[size + 1];
-  buffer[size] = 0;
-  int ret = fread(buffer, 1, size, f);
-  if (ret != size) {
-    fprintf(stderr, "Could not read the expected number of bytes.\n");
+float luaGetVal(lua_State *L, char *s) {
+  lua_getglobal(L, "eval");
+  lua_pushstring(L, s);
+  int error = lua_pcall(L, 1, 1, 0);
+  float ret = lua_tonumber(L, -1);
+  if (error) {
+    fprintf(stderr, "%s\n", lua_tostring(L, -1));
     exit(EXIT_FAILURE);
   }
-  rewind(f);
-
-  unsigned long crc = crc32(0L, Z_NULL, 0);
-  crc = crc32(crc, buffer, size);
-
-  return crc;
+  return ret;
 }
 
-cJSON *readJSONFile(FILE *f) {
-
-  /*
-   * Get the size of the file so that we know how large we need to make the
-   * buffer
-   */
-  fseek(f, 0, SEEK_END);
-  int size = ftell(f);
-  rewind(f);
-
-  /*
-   * Read the JSON data into memory
-   */
-  char buffer[size + 1];
-  buffer[size] = 0;
-  int ret = fread(buffer, 1, size, f);
-  if (ret != size) {
-    fprintf(stderr, "Could not read the expected number of bytes.\n");
-    exit(EXIT_FAILURE);
-  }
-
-  /*
-   * Parse the data using cJSON
-   */
-  cJSON *cjson = cJSON_Parse(buffer);
-  if (!cjson) {
-    const char *error_ptr = cJSON_GetErrorPtr();
-    if (error_ptr) {
-      fprintf(stderr, "Error before: %s\n", error_ptr);
+/*
+ * Set a floating point variable based on a Lua string
+ */
+void setOption(cJSON *parentElement, lua_State *L, char *str, float *f) {
+  cJSON *node = find(parentElement, str);
+  if (node) {
+    if (cJSON_IsString(node)) {
+      *f = luaGetVal(L, node->valuestring);
+      return;
+    } else if (cJSON_IsNumber(node)) {
+      char buf[256];
+      snprintf(buf, 255, "%f;", node->valuedouble);
+      *f = luaGetVal(L, buf);
+      return;
+    } else {
+      fprintf(stderr, "JSON node unknown format.\n");
+      exit(EXIT_FAILURE);
     }
-    cJSON_Delete(cjson);
-    exit(EXIT_FAILURE);
   }
-  return cjson;
+  return;
+}
+
+/*
+ * Evaluate the "_options" element, which is at the document root and contains
+ * page properties such as dimensions and background color
+ */
+void applyOptions(cJSON *stylesheet, lua_State *L) {
+  cJSON *optionsElement = find(stylesheet, "_options");
+  if (optionsElement) {
+    setOption(optionsElement, L, "pageWidth", &pageWidth);
+    setOption(optionsElement, L, "pageHeight", &pageHeight);
+  }
 }
 
 void collectConstants(cJSON *stylesheet, lua_State *L) {
@@ -231,8 +221,10 @@ int main(int argc, char *argv[]) {
   /*
    * Initialize the Cairo surface
    */
+  printf("%f\n", pageWidth);
+  printf("%f\n", pageHeight);
   cairo_surface_t *surface = cairo_pdf_surface_create(
-      outfileName, 8.5 * POINTS_PER_INCH, 11 * POINTS_PER_INCH);
+      outfileName, pageWidth, pageHeight);
 
   if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
     fprintf(stderr, "Invalid filename.\n");
