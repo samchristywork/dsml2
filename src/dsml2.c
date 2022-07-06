@@ -7,6 +7,7 @@
 #include <zlib.h>
 
 #include "dsml2.h"
+#include "io.h"
 #include "render.h"
 #include "style.h"
 #include "traverse.h"
@@ -212,6 +213,22 @@ int main(int argc, char *argv[]) {
   setStylesheetChecksum(stylesheetChecksum);
 
   /*
+   * Ingest files
+   */
+  cJSON *content = readJSONFile(contentFile);
+  cJSON *stylesheet = readJSONFile(stylesheetFile);
+
+  /*
+   * Evaluate all constants for use throughout the stylesheet tree
+   */
+  collectConstants(stylesheet, L);
+
+  /*
+   * Find all page properties in the "_options" element and apply them
+   */
+  applyOptions(stylesheet, L);
+
+  /*
    * Initialize the Cairo surface
    */
   cairo_surface_t *surface = cairo_pdf_surface_create(
@@ -222,14 +239,6 @@ int main(int argc, char *argv[]) {
     usage(argv);
   }
   cr = cairo_create(surface);
-
-  cJSON *content = readJSONFile(contentFile);
-  cJSON *stylesheet = readJSONFile(stylesheetFile);
-
-  /*
-   * Evaluate all constants for use throughout the stylesheet tree
-   */
-  collectConstants(stylesheet, L);
 
   simultaneous_traversal(cr, content, stylesheet, L);
 
