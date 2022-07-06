@@ -151,3 +151,21 @@ and
 are all valid arithmetic expressions as long as the variables listed are
 defined. Furthermore, all of these expressions can be substituted in place of a
 single numeric argument.
+
+## Markup
+
+You may specify the text that is associated with a node as a `markup` string.
+This string uses special syntax to individually format fragments of the string.
+You can modify colors, rich text attributes like boldness and underline, and
+even size and position using this language. Here is the initial "Hello, World!"
+example formatted as a markup string. The "Hello," is colored red, and the
+"World!" is in bold.
+
+```json
+{
+  "hello": "<span foreground=\"red\">Hello,</span> <b>World!</b>"
+}
+```
+
+More information about this language can be found
+[here](https://docs.gtk.org/Pango/pango_markup.html).
