@@ -125,4 +125,5 @@ alpha channel.
 ### Text Width
 
 The "textwidth" field defines the width in points at which the text will wrap.
-By default the text does not wrap at all.
+By default the text does not wrap at all. Text with any alignment other than
+"left" must have this field set.
