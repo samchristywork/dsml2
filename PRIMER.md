@@ -1,3 +1,6 @@
+*This is a work in progress. Not all DSML functionality has been recorded in
+this guide yet.*
+
 ## Overview
 
 DSML2 is a new document markup language that is designed to produce PDF output
