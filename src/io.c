@@ -1,7 +1,4 @@
-#include <cjson/cJSON.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <zlib.h>
+#include "io.h"
 
 /*
  * Generate a checksum value from a file stream.

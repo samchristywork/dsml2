@@ -25,6 +25,11 @@ build/dsml2: src/dsml2.* src/render.* build/render.o build/traverse.o build/styl
 	mkdir -p build/
 	${CC} src/dsml2.c build/*.o ${CFLAGS} -o $@ ${LIBS}
 
+test: build/dsml2
+	mkdir -p build/
+	${CC} src/test.c build/*.o ${CFLAGS} -o build/$@ ${LIBS}
+	./build/test
+
 sample:
 	make
 	./build/dsml2 -c example/simple/content.json -s example/simple/stylesheet.json > build/out.pdf
