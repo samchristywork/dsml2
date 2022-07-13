@@ -39,8 +39,11 @@ sample:
 install: build/dsml2
 	@echo "Installing DSML Version" $(VERSION)
 	mkdir -p $(PREFIX)/bin
+	mkdir -p $(MANPREFIX)/man1
 	cp build/dsml2 $(PREFIX)/bin
+	cp dsml2.1 $(MANPREFIX)/man1/dsml2.1
 	chmod 755 $(PREFIX)/bin/dsml2
+	chmod 644 $(MANPREFIX)/man1/dsml2.1
 
 valgrind:
 	make
