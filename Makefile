@@ -36,6 +36,12 @@ sample:
 	make
 	./build/dsml2 -c example/simple/content.json -s example/simple/stylesheet.json > build/out.pdf
 
+install: build/dsml2
+	@echo "Installing DSML Version" $(VERSION)
+	mkdir -p $(PREFIX)/bin
+	cp build/dsml2 $(PREFIX)/bin
+	chmod 755 $(PREFIX)/bin/dsml2
+
 valgrind:
 	make
 	valgrind --leak-check=full ./build/dsml2 -c ./example/simple/content.json -s ./example/simple/stylesheet.json -o build/out.pdf
