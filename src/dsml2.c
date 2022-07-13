@@ -205,7 +205,7 @@ int main(int argc, char *argv[]) {
   if (!contentFile) {
     contentFile = fopen("content.json", "rb");
     if (!contentFile) {
-      perror("fopen");
+      fprintf(stderr, "Please specify a content file.\n");
       usage(argv);
     }
   }
@@ -213,7 +213,7 @@ int main(int argc, char *argv[]) {
   if (!stylesheetFile) {
     stylesheetFile = fopen("stylesheet.json", "rb");
     if (!stylesheetFile) {
-      perror("fopen");
+      fprintf(stderr, "Please specify a stylesheet file.\n");
       usage(argv);
     }
   }
