@@ -188,8 +188,14 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  /*
+   * Consume all other arguments.
+   */
   if (optind != argc) {
     fprintf(stderr, "Wrong number of arguments.\n");
+    while (optind < argc)
+      printf("%s ", argv[optind++]);
+    printf("\n");
     usage(argv);
   }
 
