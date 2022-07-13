@@ -110,10 +110,10 @@ void collectConstants(cJSON *stylesheet, lua_State *L) {
 void usage(char *argv[]) {
   fprintf(stderr,
           "Usage: %s [-c content] [-s stylesheet] [-o output file]\n"
-          " -c\tThe file that contains the document content. Default \"content.json\".\n"
-          " -s\tThe file that contains the document style. Default \"stylesheet.json\".\n"
-          " -o\tThe output file. Defaults to stdout.\n"
-          " -v\tVerbose mode.\n"
+          " -c,--content      The file that contains the document content. Default \"content.json\".\n"
+          " -s,--stylesheet   The file that contains the document style. Default \"stylesheet.json\".\n"
+          " -o,--output       The output file. Defaults to stdout.\n"
+          " -v,--verbose      Verbose mode.\n"
           "",
           argv[0]);
   exit(EXIT_FAILURE);
