@@ -1,3 +1,5 @@
+include config.mk
+
 CC := gcc
 
 CFLAGS := -g -Wall -Werror -Wpedantic $(shell pkg-config --cflags cairo librsvg-2.0 lua pango pangocairo)
