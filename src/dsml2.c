@@ -1,5 +1,6 @@
 #include <cairo-pdf.h>
 #include <cjson/cJSON.h>
+#include <getopt.h>
 #include <lauxlib.h>
 #include <lualib.h>
 #include <stdlib.h>
@@ -151,8 +152,17 @@ int main(int argc, char *argv[]) {
    * Handle program arguments
    */
   int opt;
+  int option_index = 0;
   char *optstring = "c:s:o:hv";
-  while ((opt = getopt(argc, argv, optstring)) != -1) {
+  static struct option long_options[] = {
+      {"content", required_argument, 0, 'c'},
+      {"stylesheet", required_argument, 0, 's'},
+      {"output", required_argument, 0, 'o'},
+      {"help", no_argument, 0, 'h'},
+      {"verbose", no_argument, 0, 'v'},
+      {0, 0, 0, 0},
+  };
+  while ((opt = getopt_long(argc, argv, optstring, long_options, &option_index)) != -1) {
     if (opt == 'h') {
       usage(argv);
     }
