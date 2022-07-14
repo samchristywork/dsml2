@@ -1,0 +1,132 @@
+{
+  "_options": {
+    "pageWidth": "oneinch*8.5"
+  },
+  "_constants": {
+    "oneinch": 72,
+    "pagewidth": "oneinch*8.5",
+    "pageheight": "oneinch*11",
+    "oneline": 12,
+    "margin": ".75 * oneinch",
+    "jobstride": "oneinch*1.05"
+  },
+  "body": {
+    "_style": { "r": 0.1, "g": 0.1, "b": 0.1, "y": "-30" },
+    "title": { "_style": { "x": "margin", "y": "margin+oneinch/3" },
+      "name": { "_style": { "y":"oneline*1.3", "face": "serif", "size": 20 } },
+      "contact": { "_style": { "y": "oneinch/3+oneline*1.3", "face": "serif", "size": 8 } },
+      "synopsis": { "_style": { "x": "oneinch*2", "y": "oneline", "width": "pagewidth-oneinch*2-margin*2", "face": "serif", "spacing": 1.25, "size": 9 } }
+    },
+    "jobs": {
+      "_style": {
+        "y": "oneinch*1.3"
+      },
+      "job1": {
+        "_style": { "x": "margin", "y": "jobstride*1", "size": 8, "line": { "x1": "0", "y1": 10, "x2": "pagewidth-2*margin", "y2": 10, "width": 1 } },
+        "title": { "_style": { "textAlign": "left" } },
+        "company": { "_style": { "width": "pagewidth", "textAlign": "center", "size": 10, "x": "pagewidth/2-margin", "y": -2 } },
+        "date": { "_style": { "width": "pagewidth", "textAlign": "right", "x": "pagewidth-margin*2" } },
+        "details": {
+          "_style": { "size": 9, "y": 6 },
+          "line1": { "_style": { "y": "oneline*1" } },
+          "line2": { "_style": { "y": "oneline*2" } },
+          "line3": { "_style": { "y": "oneline*3" } },
+          "line4": { "_style": { "y": "oneline*4" } }
+        }
+      },
+      "job2": {
+        "_style": { "x": "margin", "y": "jobstride*2", "size": 8, "line": { "x1": "0", "y1": 10, "x2": "pagewidth-2*margin", "y2": 10, "width": 1 } },
+        "title": { "_style": { "textAlign": "left" } },
+        "company": { "_style": { "width": "pagewidth", "textAlign": "center", "size": 10, "x": "pagewidth/2-margin", "y": -2 } },
+        "date": { "_style": { "width": "pagewidth", "textAlign": "right", "x": "pagewidth-margin*2" } },
+        "details": {
+          "_style": { "size": 9, "y": 6 },
+          "line1": { "_style": { "y": "oneline*1" } },
+          "line2": { "_style": { "y": "oneline*2" } },
+          "line3": { "_style": { "y": "oneline*3" } },
+          "line4": { "_style": { "y": "oneline*4" } }
+        }
+      },
+      "job3": {
+        "_style": { "x": "margin", "y": "jobstride*3", "size": 8, "line": { "x1": "0", "y1": 10, "x2": "pagewidth-2*margin", "y2": 10, "width": 1 } },
+        "title": { "_style": { "textAlign": "left" } },
+        "company": { "_style": { "width": "pagewidth", "textAlign": "center", "size": 10, "x": "pagewidth/2-margin", "y": -2 } },
+        "date": { "_style": { "width": "pagewidth", "textAlign": "right", "x": "pagewidth-margin*2" } },
+        "details": {
+          "_style": { "size": 9, "y": 6 },
+          "line1": { "_style": { "y": "oneline*1" } },
+          "line2": { "_style": { "y": "oneline*2" } },
+          "line3": { "_style": { "y": "oneline*3" } },
+          "line4": { "_style": { "y": "oneline*4" } }
+        }
+      },
+      "education": {
+        "_style": { "x": "margin", "y": "jobstride*4", "size": 8, "line": { "x1": "0", "y1": 10, "x2": "pagewidth-2*margin", "y2": 10, "width": 1 } },
+        "title": { "_style": { "width": "pagewidth", "textAlign": "center", "size": 10, "x": "pagewidth/2-margin", "y": -2 } },
+        "details": {
+          "_style": { "size": 9, "y": 6 },
+          "line1": { "_style": { "y": "oneline*1" } },
+          "line2": { "_style": { "y": "oneline*2" } },
+          "line3": { "_style": { "y": "oneline*3" } },
+          "line4": { "_style": { "y": "oneline*4" } }
+        }
+      }
+    },
+    "skills": {
+      "_style": { "size": 8, "x": "margin", "y": "jobstride * 5 + oneinch*1.3", "line": { "x1": "0", "y1": 10, "x2": "pagewidth-2*margin", "y2": 10, "width": 1 } },
+      "title": { "_style": { "y": -2 } },
+      "details": {
+        "_style": { "size": 9, "y": 6 },
+        "skillset1": { "_style": { "y": "oneline*1", "stripNewlines": true } },
+        "skillset2": { "_style": { "y": "oneline*2", "stripNewlines": true } },
+        "skillset3": { "_style": { "y": "oneline*3", "stripNewlines": true } },
+        "skillset4": { "_style": { "y": "oneline*4", "stripNewlines": true } },
+        "skillset5": { "_style": { "y": "oneline*5", "stripNewlines": true } },
+        "skillset6": { "_style": { "y": "oneline*6", "stripNewlines": true } },
+        "skillset7": { "_style": { "y": "oneline*7", "stripNewlines": true } },
+        "skillset8": { "_style": { "y": "oneline*8", "stripNewlines": true } },
+        "skillset9": { "_style": { "y": "oneline*9", "stripNewlines": true } },
+        "skillseta": { "_style": { "y": "oneline*10", "stripNewlines": true } },
+        "skillsetb": { "_style": { "y": "oneline*11", "stripNewlines": true } },
+        "skillsetc": { "_style": { "y": "oneline*12", "stripNewlines": true } },
+        "skillsetd": { "_style": { "y": "oneline*13", "stripNewlines": true } }
+      }
+    },
+    "projects": {
+      "_style": { "size": 8, "x": "margin", "y": "oneinch*9.1",
+        "line": { "x1": "0", "y1": 10, "x2": "pagewidth-2*margin", "y2": 10, "width": 1 }
+      },
+      "title": { "_style": { "y": -2 } },
+      "project1": {
+        "_style": { "y": "oneline*1+6" },
+        "title": { "_style": { "face": "serif", "size": "10" } },
+        "source": { "_style": { "size": "10", "x": "-margin+pagewidth/2-oneline", "textAlign": "right", "width": "pagewidth", "URI": "uri='https://github.com/samchristywork/dsml2'" } },
+        "details": { "_style": { "width": "pagewidth/2-margin-oneline", "y": "oneline*1.5" } }
+      },
+      "project2": {
+        "_style": { "x": "pagewidth/2-margin+oneline", "y": "oneline*1+6" },
+        "title": { "_style": { "face": "serif", "size": "10" } },
+        "source": { "_style": { "size": "10", "x": "-margin+pagewidth/2-oneline", "textAlign": "right", "width": "pagewidth", "URI": "uri='https://github.com/samchristywork/vim-paint'" } },
+        "details": { "_style": { "width": "pagewidth/2-margin-oneline", "y": "oneline*1.5" } }
+      }
+    }
+  },
+  "stamp": {
+    "_style": {
+      "textAlign": "right",
+      "width": "pagewidth",
+      "x": "pagewidth-4",
+      "y": "pageheight-20",
+      "size": 7
+    },
+    "rev": {
+      "_style": {
+      }
+    },
+    "date": {
+      "_style": {
+        "y": 8
+      }
+    }
+  }
+}

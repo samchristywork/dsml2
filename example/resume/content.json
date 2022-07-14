@@ -1,0 +1,88 @@
+{
+  "body": {
+    "title": {
+      "name": "Sam Christy",
+      "contact": "somemail@domain.com\ngithub.com/samchristywork\n(123) 456-7890",
+      "synopsis": "        Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut purus elit, vestibulum ut, placerat ac, adipiscing vitae, felis. Curabitur dictum gravida mauris. Nam arcu libero, nonummy eget, consectetuer id, vulputate a, magna. Donec vehicula augue eu neque. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas."
+    },
+    "jobs": {
+      "job1": {
+        "title": "Foo Engineer",
+        "company": "<b>Company3</b>",
+        "date": "Jan 20XX - Present",
+        "details": {
+          "line1": "– Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut purus elit, vestibulum ut, placerat.",
+          "line2": "– Ac adipiscing vitae, felis. Curabitur dictum gravida mauris. Nam arcu libero, nonummy eget.",
+          "line3": "– Consectetuer id, vulputate a, magna. Donec vehicula augue eu neque. Pellentesque habitant morbi.",
+          "line4": "– Tristique senectus et netus et malesuada fames ac turpis egestas. Mauris ut leo. Cras viverra."
+        }
+      },
+      "job2": {
+        "title": "Bar Engineer",
+        "company": "<b>Company2</b>",
+        "date": "Jan 20XX - Jan 20XX",
+        "details": {
+          "line1": "– Metus rhoncus sem. Nulla et lectus vestibulum urna fringilla ultrices. Phasellus eu tellus sit.",
+          "line2": "– Amet tortor gravida placerat. Integer sapien est, iaculis in, pretium quis, viverra ac, nunc.",
+          "line3": "– Praesent eget sem vel leo ultrices bibendum. Aenean faucibus. Morbi dolor nulla, malesuada eu.",
+          "line4": "– Pulvinar at, mollis ac, nulla. Curabitur auctor semper nulla. Donec varius orci eget risus. Duis."
+        }
+      },
+      "job3": {
+        "title": "Baz Engineer",
+        "company": "<b>Company1</b>",
+        "date": "Jan 20XX - Jan 20XX",
+        "details": {
+          "line1": "– Nibh mi, congue eu, accumsan eleifend, sagittis quis, diam. Duis eget orci sit amet orci dignissim.",
+          "line2": "– Rutrum. Nam dui ligula, fringilla a, euismod sodales, sollicitudin vel, wisi. Morbi auctor lorem.",
+          "line3": "– Non justo. Nam lacus libero, pretium at, lobortis vitae, ultricies et, tellus. Donec aliquet.",
+          "line4": "– Tortor sed accumsan bibendum, erat ligula aliquet magna, vitae ornare odio metus a mi. Morbi ac."
+        }
+      },
+      "education": {
+        "title": "<b>Education</b>",
+        "details": {
+          "line1": "– Orci et nisl hendrerit mollis. Suspendisse ut massa. Cras nec ante. Pellentesque a nulla. Cum.",
+          "line2": "– Sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aliquam tincidunt.",
+          "line3": "– Urna. Nulla ullamcorper vestibulum turpis. Pellentesque cursus luctus mauris. Nulla malesuada.",
+          "line4": "– Porttitor diam. Donec felis erat, congue non, volutpat at, tincidunt tristique, libero. Vivamus."
+        }
+      }
+    },
+    "skills": {
+      "title": "Skills (Job experience only, extensive experience in <b>boldface</b>):",
+      "details": {
+        "skillset1": "INCLUDE:example/résumé/res/skillset1",
+        "skillset2": "INCLUDE:example/résumé/res/skillset2",
+        "skillset3": "INCLUDE:example/résumé/res/skillset3",
+        "skillset4": "INCLUDE:example/résumé/res/skillset4",
+        "skillset5": "INCLUDE:example/résumé/res/skillset5",
+        "skillset6": "INCLUDE:example/résumé/res/skillset6",
+        "skillset7": "INCLUDE:example/résumé/res/skillset7",
+        "skillset8": "INCLUDE:example/résumé/res/skillset8",
+        "skillset9": "INCLUDE:example/résumé/res/skillset9",
+        "skillseta": "INCLUDE:example/résumé/res/skillseta",
+        "skillsetb": "INCLUDE:example/résumé/res/skillsetb",
+        "skillsetc": "INCLUDE:example/résumé/res/skillsetc",
+        "skillsetd": "INCLUDE:example/résumé/res/skillsetd"
+      }
+    },
+    "projects": {
+      "title": "Projects",
+      "project1": {
+        "title": "DSML2",
+        "source": "<span foreground=\"blue\"><u>source</u></span>",
+        "details": "    Document Style Markup Language version 2 is a language and text layout engine that I created for generating PDF documents. This résumé and the accompanying cover letter are examples of the output of this program. DSML2 is written in C, and makes use of Cairo, embedded Lua, cJSON, and Pango."
+      },
+      "project2": {
+        "title": "Vim Paint",
+        "source": "<span foreground=\"blue\"><u>source</u></span>",
+        "details": "    A re-imagining of Vim if it were an image editor instead of a text editor. This program takes many concepts found in Vim like the idea of each edit being a combination of an operator and a motion. Where in regular Vim you might \"delete in word\", in Vim Paint you would \"delete in pixel\" or \"change in area\" instead."
+      }
+    }
+  },
+  "stamp": {
+    "rev": "REV",
+    "date": "CURRENT_DATE"
+  }
+}
