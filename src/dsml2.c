@@ -9,6 +9,7 @@
 
 #include "dsml2.h"
 #include "io.h"
+#include "lua.h"
 #include "render.h"
 #include "style.h"
 #include "traverse.h"
