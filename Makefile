@@ -15,6 +15,10 @@ build/style.o: src/style.*
 	mkdir -p build/
 	${CC} src/style.c -c ${CFLAGS} -o $@ ${LIBS}
 
+build/lua.o: src/lua.*
+	mkdir -p build/
+	${CC} src/lua.c -c ${CFLAGS} -o $@ ${LIBS}
+
 build/traverse.o: src/traverse.*
 	mkdir -p build/
 	${CC} src/traverse.c -c ${CFLAGS} -o $@ ${LIBS}
@@ -23,7 +27,7 @@ build/render.o: src/render.* src/style.h src/version.h
 	mkdir -p build/
 	${CC} src/render.c -c ${CFLAGS} -o $@ ${LIBS}
 
-build/dsml2: src/dsml2.* src/render.* build/render.o build/traverse.o build/style.o build/io.o
+build/dsml2: src/dsml2.* src/render.* build/render.o build/traverse.o build/lua.o build/style.o build/io.o
 	mkdir -p build/
 	${CC} src/dsml2.c build/*.o ${CFLAGS} -o $@ ${LIBS}
 
