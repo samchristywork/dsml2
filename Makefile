@@ -36,9 +36,11 @@ test: build/dsml2
 	${CC} src/test.c build/*.o ${CFLAGS} -o build/$@ ${LIBS}
 	./build/test
 
-sample:
+sample: build/simple.pdf
+
+build/simple.pdf: example/simple/* build/dsml2
 	make
-	./build/dsml2 -c example/simple/content.json -s example/simple/stylesheet.json > build/out.pdf
+	./build/dsml2 -c example/simple/content.json -s example/simple/stylesheet.json -o build/simple.pdf
 
 install: build/dsml2
 	@echo "Installing DSML Version" $(VERSION)
