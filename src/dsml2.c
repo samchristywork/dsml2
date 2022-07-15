@@ -156,17 +156,20 @@ int main(int argc, char *argv[]) {
   /*
    * Find all page properties in the "_options" element and apply them
    */
-  applyOptions(stylesheet, L);
+  options options = {0};
+  options.pageWidth = 8.5 * POINTS_PER_INCH;
+  options.pageHeight = 11 * POINTS_PER_INCH;
+  applyOptions(stylesheet, L, &options);
 
   /*
    * Initialize the Cairo surface
    */
   if (logMode == LOG_VERBOSE) {
-    fprintf(stdout, "%f\n", pageWidth);
-    fprintf(stdout, "%f\n", pageHeight);
+    fprintf(stdout, "%f\n", options.pageWidth);
+    fprintf(stdout, "%f\n", options.pageHeight);
   }
   cairo_surface_t *surface = cairo_pdf_surface_create(
-      outfileName, pageWidth, pageHeight);
+      outfileName, options.pageWidth, options.pageHeight);
 
   if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
     fprintf(stderr, "Invalid filename.\n");
