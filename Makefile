@@ -57,4 +57,4 @@ valgrind:
 clean:
 	rm -rf build/
 
-.PHONY: sample install valgrind clean
+.PHONY: sample install valgrind clean test
