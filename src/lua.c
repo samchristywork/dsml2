@@ -13,7 +13,6 @@
 #include "render.h"
 #include "style.h"
 #include "traverse.h"
-#include "version.h"
 
 /*
  * Retrieve a floating point value by evaluating a string

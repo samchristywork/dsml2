@@ -25,6 +25,7 @@ void usage(char *argv[]) {
           " -s,--stylesheet   The file that contains the document style. Default \"stylesheet.json\".\n"
           " -o,--output       The output file. Defaults to stdout.\n"
           " -v,--verbose      Verbose mode.\n"
+          " -V,--version      Print out version string.\n"
           "",
           argv[0]);
   exit(EXIT_FAILURE);
@@ -64,13 +65,14 @@ int main(int argc, char *argv[]) {
    */
   int opt;
   int option_index = 0;
-  char *optstring = "c:s:o:hv";
+  char *optstring = "c:s:o:hvV";
   static struct option long_options[] = {
       {"content", required_argument, 0, 'c'},
       {"stylesheet", required_argument, 0, 's'},
       {"output", required_argument, 0, 'o'},
       {"help", no_argument, 0, 'h'},
       {"verbose", no_argument, 0, 'v'},
+      {"version", no_argument, 0, 'V'},
       {0, 0, 0, 0},
   };
   while ((opt = getopt_long(argc, argv, optstring, long_options, &option_index)) != -1) {
@@ -96,6 +98,11 @@ int main(int argc, char *argv[]) {
     }
     if (opt == 'v') {
       logMode = LOG_VERBOSE;
+    }
+    if (opt == 'V') {
+      printf("%s\n\n", VERSION_STRING);
+      printf("%s\n", LICENSE_STRING);
+      exit(EXIT_SUCCESS);
     }
   }
 

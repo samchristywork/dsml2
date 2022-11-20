@@ -10,7 +10,6 @@
 #include "render.h"
 #include "style.h"
 #include "traverse.h"
-#include "version.h"
 
 /*
  * Macros for applying style information.
