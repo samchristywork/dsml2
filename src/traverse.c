@@ -36,7 +36,7 @@ void _simultaneous_traversal(cairo_t *cr, cJSON *content, cJSON *stylesheet, int
   cJSON *styleElement = find(stylesheet, "_style");
   applyStyles(cr, styleElement, &style, L);
 
-  handleIcons(cr, stylesheet, &style);
+  handleImages(cr, stylesheet, &style);
 
   renderText(cr, content, &style);
 

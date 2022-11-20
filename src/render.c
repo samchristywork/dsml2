@@ -28,7 +28,40 @@ size_t writeCallback(void *ptr, size_t size, size_t nmemb, FILE *stream) {
   return fwrite(ptr, size, nmemb, stream);
 }
 
-void handleIcons(cairo_t *cr, cJSON *stylesheet, style *style) {
+void handleImages(cairo_t *cr, cJSON *stylesheet, style *style) {
+
+  /*
+   * This section of code is run whenever the "png" element is encountered
+   */
+  cJSON *png = find(stylesheet, "png");
+  if (png) {
+
+    /*
+     * The "icon" element should have a filename associated with it
+     */
+    cJSON *filename = find(png, "filename");
+    if (filename) {
+
+      /*
+       * Save the context and apply transformations
+       */
+      cairo_save(cr);
+      cairo_translate(cr, style->x, style->y);
+      cairo_scale(cr, style->size, style->size);
+
+      /*
+       * Display the image
+       */
+      cairo_surface_t *sfc = cairo_image_surface_create_from_png(filename->valuestring);
+      cairo_set_source_surface(cr, sfc, 0, 0);
+      cairo_paint(cr);
+
+      /*
+       * Restore the graphics context
+       */
+      cairo_restore(cr);
+    }
+  }
 
   /*
    * This section of code is run whenever the "icon" element is encountered
