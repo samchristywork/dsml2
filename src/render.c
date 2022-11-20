@@ -82,7 +82,6 @@ void handleImages(cairo_t *cr, cJSON *stylesheet, style *style) {
        */
       cairo_save(cr);
       cairo_translate(cr, style->x, style->y);
-      cairo_scale(cr, style->size, style->size);
 
       /*
        * Try to open the image, download it from the internet if that doesn't
@@ -110,7 +109,12 @@ void handleImages(cairo_t *cr, cJSON *stylesheet, style *style) {
       /*
        * Display the image
        */
-      if (!rsvg_handle_render_cairo(rsvg, cr)) {
+      RsvgRectangle r;
+      r.x = 0;
+      r.y = 0;
+      r.width = style->size;
+      r.height = style->size;
+      if (!rsvg_handle_render_document(rsvg, cr, &r, NULL)) {
         fprintf(stderr, "Icon could not be rendered.\n");
         exit(EXIT_FAILURE);
       }
@@ -232,14 +236,10 @@ void renderText(cairo_t *cr, cJSON *content, style *style) {
     /*
      * Render the text
      */
-    if (style->uri) {
-      cairo_tag_begin(cr, CAIRO_TAG_LINK, style->uri);
-    }
+    cairo_tag_begin(cr, CAIRO_TAG_LINK, style->uri);
     cairo_move_to(cr, style->x, style->y);
     pango_cairo_show_layout(cr, layout);
-    if (style->uri) {
-      cairo_tag_end(cr, CAIRO_TAG_LINK);
-    }
+    cairo_tag_end(cr, CAIRO_TAG_LINK);
 
     /*
      * Cleanup
