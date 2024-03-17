@@ -1,4 +1,4 @@
-![Banner](https://s-christy.com/status-banner-service/dsml2/banner-slim.svg)
+![Banner](https://s-christy.com/sbs/status-banner.svg?icon=image/picture_as_pdf&hue=200&title=DSML2&description=A%20new%20type%20of%20document%20preparation%20system)
 
 ## Overview
 
